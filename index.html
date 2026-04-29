@@ -95,8 +95,21 @@
   .rec-action { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 14px; cursor: pointer; }
   .rec-action.primary { background: var(--accent); color: #0a0d12; border-color: var(--accent); font-weight: 600; }
   .rec-action:active { opacity: 0.7; }
-  audio#rec-preview { width: 100%; margin-top: 10px; }
   .rec-error { color: var(--red); font-size: 12px; margin-top: 6px; }
+  .queue-head { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .queue-head h3 { margin: 0; }
+  .small-btn { padding: 6px 10px; font-size: 13px; flex: 0; }
+  .rec-queue { list-style: none; padding: 0; margin: 0; }
+  .rec-queue li { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .rec-queue li:last-child { border-bottom: 0; }
+  .rec-queue .qm-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .rec-queue .qm-name { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .rec-queue .qm-sub { color: var(--dim); font-size: 11px; }
+  .rec-queue .qm-shared .qm-name::before { content: "✓ "; color: var(--green); }
+  .qm-btn { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; color: var(--ink); font-size: 12px; cursor: pointer; }
+  .qm-btn.share { color: var(--accent); border-color: var(--accent); }
+  .qm-btn.del { color: var(--red); border-color: var(--line); }
+  .qm-btn:active { opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -242,7 +255,7 @@
     
     <section class="card recorder" id="rec">
       <h2>Voice memo</h2>
-      <p class="dim small">Record, then AirDrop to your Mac. Coach picks it up automatically.</p>
+      <p class="dim small">Record anytime. Memos save on this phone and queue up below — AirDrop them to your Mac whenever.</p>
       <div class="rec-controls">
         <button id="rec-btn" class="rec-btn" aria-label="Record">
           <span class="rec-circle"></span>
@@ -252,11 +265,13 @@
           <div id="rec-status" class="rec-status">Tap to record</div>
         </div>
       </div>
-      <div id="rec-actions" class="rec-actions" hidden>
-        <button id="rec-share" class="rec-action primary">Share &rarr; AirDrop</button>
-        <button id="rec-redo" class="rec-action">Re-record</button>
+
+      <div class="queue-head" id="queue-head" hidden>
+        <h3 id="queue-title">Queued memos</h3>
+        <button id="rec-share-all" class="rec-action primary small-btn">Share all &rarr; AirDrop</button>
       </div>
-      <audio id="rec-preview" controls hidden></audio>
+      <ul id="rec-queue" class="rec-queue"></ul>
+      <p id="queue-help" class="dim small" hidden>Memos stay on this phone until you delete them. Clearing Safari data will erase them — share to your Mac before then.</p>
     </section>
     
     <section class="card">
@@ -427,7 +442,7 @@
       </ul>
       <p class="dim small">Claude will update <code>state.json</code> and regenerate this page. If you want the schedule reshuffled (e.g., move Tue → Wed), Claude will ask first.</p>
     </section>
-    <footer class="foot">Generated 2026-04-29T04:28:16.452Z · Phase: 1 — Base + shoulder</footer>
+    <footer class="foot">Generated 2026-04-29T04:31:05.548Z · Phase: 1 — Base + shoulder</footer>
   </div>
   <script>
     if ("serviceWorker" in navigator) {
@@ -438,19 +453,69 @@
       const btn = document.getElementById("rec-btn");
       const timerEl = document.getElementById("rec-timer");
       const statusEl = document.getElementById("rec-status");
-      const actions = document.getElementById("rec-actions");
-      const shareBtn = document.getElementById("rec-share");
-      const redoBtn = document.getElementById("rec-redo");
-      const preview = document.getElementById("rec-preview");
+      const queueEl = document.getElementById("rec-queue");
+      const queueHead = document.getElementById("queue-head");
+      const queueHelp = document.getElementById("queue-help");
+      const queueTitle = document.getElementById("queue-title");
+      const shareAllBtn = document.getElementById("rec-share-all");
 
       let mediaRecorder = null;
       let chunks = [];
       let stream = null;
       let startTime = 0;
       let timerHandle = null;
-      let lastBlob = null;
-      let lastFile = null;
 
+      // ---------- IndexedDB ----------
+      const DB_NAME = "coach";
+      const STORE = "memos";
+      let dbPromise = null;
+      function openDB() {
+        if (dbPromise) return dbPromise;
+        dbPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE)) {
+              db.createObjectStore(STORE, { keyPath: "id" });
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+        return dbPromise;
+      }
+      async function tx(mode, fn) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const t = db.transaction(STORE, mode);
+          const store = t.objectStore(STORE);
+          const result = fn(store);
+          t.oncomplete = () => resolve(result);
+          t.onerror = () => reject(t.error);
+          t.onabort = () => reject(t.error);
+        });
+      }
+      function addMemo(memo) { return tx("readwrite", (s) => s.put(memo)); }
+      function listMemos() {
+        return tx("readonly", (s) => {
+          return new Promise((res, rej) => {
+            const r = s.getAll();
+            r.onsuccess = () => res(r.result || []);
+            r.onerror = () => rej(r.error);
+          });
+        }).then((p) => p);
+      }
+      function getMemo(id) {
+        return tx("readonly", (s) => new Promise((res, rej) => {
+          const r = s.get(id);
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => rej(r.error);
+        })).then((p) => p);
+      }
+      function deleteMemo(id) { return tx("readwrite", (s) => s.delete(id)); }
+      function updateMemo(memo) { return tx("readwrite", (s) => s.put(memo)); }
+
+      // ---------- helpers ----------
       function pad(n) { return String(n).padStart(2, "0"); }
       function fmtTime(s) {
         const m = Math.floor(s / 60);
@@ -466,6 +531,13 @@
           + pad(d.getHours())
           + pad(d.getMinutes());
       }
+      function fmtRelative(ts) {
+        const diff = (Date.now() - ts) / 1000;
+        if (diff < 60) return "just now";
+        if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+        return Math.floor(diff / 86400) + "d ago";
+      }
       function setStatus(msg, isError) {
         statusEl.textContent = msg;
         statusEl.classList.toggle("rec-error", !!isError);
@@ -479,6 +551,7 @@
       }
       function extFor(mime) { return mime.startsWith("audio/mp4") ? "m4a" : "webm"; }
 
+      // ---------- recording ----------
       async function start() {
         try {
           stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -505,67 +578,127 @@
         timerHandle = setInterval(() => {
           timerEl.textContent = fmtTime((Date.now() - startTime) / 1000);
         }, 250);
-        actions.hidden = true;
-        preview.hidden = true;
       }
 
-      function stop() {
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-          mediaRecorder.stop();
-        }
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
       }
 
-      function onStop() {
+      async function onStop() {
         clearInterval(timerHandle);
         btn.classList.remove("recording");
         if (stream) stream.getTracks().forEach(t => t.stop());
         const mime = (mediaRecorder && mediaRecorder.mimeType) || "audio/mp4";
-        lastBlob = new Blob(chunks, { type: mime });
+        const blob = new Blob(chunks, { type: mime });
         const ext = extFor(mime);
         const name = "coach-" + stamp() + "." + ext;
-        lastFile = new File([lastBlob], name, { type: mime, lastModified: Date.now() });
-        preview.src = URL.createObjectURL(lastBlob);
-        preview.hidden = false;
-        actions.hidden = false;
-        const sizeKB = Math.round(lastBlob.size / 1024);
-        setStatus("Ready: " + name + " (" + sizeKB + " KB)");
+        const memo = {
+          id: name + "-" + Date.now(),
+          name,
+          mime,
+          blob,
+          size: blob.size,
+          created: Date.now(),
+          duration_ms: Date.now() - startTime,
+          shared: false
+        };
+        try {
+          await addMemo(memo);
+          setStatus("Saved: " + name + " (" + Math.round(blob.size / 1024) + " KB)");
+        } catch (e) {
+          setStatus("Save failed: " + e.message, true);
+          return;
+        }
+        timerEl.textContent = "00:00";
+        await render();
       }
 
-      async function share() {
-        if (!lastFile) return;
-        if (navigator.canShare && navigator.canShare({ files: [lastFile] })) {
-          try {
-            await navigator.share({ files: [lastFile], title: "Coach memo", text: "Voice memo for coach" });
-            setStatus("Shared. AirDrop to your Mac to drop in Downloads.");
-          } catch (e) {
-            if (e.name !== "AbortError") setStatus("Share failed: " + e.message, true);
+      // ---------- queue UI ----------
+      async function render() {
+        const memos = (await listMemos()).sort((a, b) => b.created - a.created);
+        if (memos.length === 0) {
+          queueHead.hidden = true;
+          queueHelp.hidden = true;
+          queueEl.innerHTML = "";
+          return;
+        }
+        queueHead.hidden = false;
+        queueHelp.hidden = false;
+        const pending = memos.filter((m) => !m.shared).length;
+        queueTitle.textContent = "Queued memos · " + pending + " pending / " + memos.length + " total";
+        shareAllBtn.disabled = pending === 0;
+        shareAllBtn.style.opacity = pending === 0 ? "0.4" : "1";
+
+        queueEl.innerHTML = memos.map((m) => {
+          const sizeKB = Math.round(m.size / 1024);
+          const dur = Math.round(m.duration_ms / 1000);
+          return '<li data-id="' + m.id + '" class="' + (m.shared ? "qm-shared" : "") + '">' +
+            '<div class="qm-meta">' +
+              '<span class="qm-name">' + m.name + '</span>' +
+              '<span class="qm-sub">' + fmtRelative(m.created) + ' · ' + dur + 's · ' + sizeKB + ' KB' + (m.shared ? ' · shared' : '') + '</span>' +
+            '</div>' +
+            '<button class="qm-btn share" data-action="share" data-id="' + m.id + '">Share</button>' +
+            '<button class="qm-btn del" data-action="delete" data-id="' + m.id + '" aria-label="Delete">✕</button>' +
+          '</li>';
+        }).join("");
+      }
+
+      async function shareIds(ids) {
+        const memos = [];
+        for (const id of ids) {
+          const m = await getMemo(id);
+          if (m) memos.push(m);
+        }
+        if (memos.length === 0) return;
+        const files = memos.map((m) => new File([m.blob], m.name, { type: m.mime, lastModified: m.created }));
+        if (!navigator.canShare || !navigator.canShare({ files })) {
+          // fallback: download each
+          for (const f of files) {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(f);
+            a.download = f.name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
           }
-        } else {
-          // fallback: download
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(lastBlob);
-          a.download = lastFile.name;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setStatus("Sharing not supported — downloaded instead.");
+          setStatus("Sharing not supported — downloaded " + files.length + " file(s) instead.");
+          return;
+        }
+        try {
+          await navigator.share({ files, title: "Coach memos", text: files.length + " voice memo(s)" });
+          for (const m of memos) { m.shared = true; await updateMemo(m); }
+          setStatus("Shared " + files.length + " memo(s). AirDrop to your Mac.");
+          await render();
+        } catch (e) {
+          if (e.name !== "AbortError") setStatus("Share failed: " + e.message, true);
         }
       }
 
-      function reset() {
-        lastBlob = null; lastFile = null;
-        preview.hidden = true;
-        actions.hidden = true;
-        timerEl.textContent = "00:00";
-        setStatus("Tap to record");
-      }
-
       btn.addEventListener("click", () => {
-        if (mediaRecorder && mediaRecorder.state === "recording") stop();
+        if (mediaRecorder && mediaRecorder.state === "recording") stopRecording();
         else start();
       });
-      shareBtn.addEventListener("click", share);
-      redoBtn.addEventListener("click", reset);
+
+      shareAllBtn.addEventListener("click", async () => {
+        const memos = (await listMemos()).filter((m) => !m.shared);
+        await shareIds(memos.map((m) => m.id));
+      });
+
+      queueEl.addEventListener("click", async (ev) => {
+        const t = ev.target.closest("button[data-action]");
+        if (!t) return;
+        const id = t.dataset.id;
+        const action = t.dataset.action;
+        if (action === "share") await shareIds([id]);
+        else if (action === "delete") {
+          if (confirm("Delete this memo? It can't be recovered.")) {
+            await deleteMemo(id);
+            await render();
+          }
+        }
+      });
+
+      render();
     })();
   </script>
 </body>

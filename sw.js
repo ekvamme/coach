@@ -1,6 +1,6 @@
 // Minimal offline cache so the page works on the trail without signal.
 // Bust the cache by bumping CACHE_VERSION in generate.js output.
-const CACHE = "coach-v1";
+const CACHE = "coach-v2";
 const ASSETS = [
   "./",
   "./index.html",
