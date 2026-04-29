@@ -7,7 +7,20 @@
     "phase_window": "May → mid-July 2026"
   },
   "current_week_overrides": {},
-  "log": [],
+  "log": [
+    {
+      "date": "2026-04-28",
+      "planned": "Strength A",
+      "did": "Strength A; tested TGU at 20 lb — too heavy, dropping back to 17.5",
+      "shoulder_during": "green",
+      "shoulder_post_24h": null,
+      "sleep_side_tolerance": null,
+      "notes": "Post-workout 3/10 in anterior + superior left shoulder (consistent with baseline location per MRI). 20 lb TGU test failed — hold at 17.5, retest in 2 weeks per progression rule.",
+      "processed_memos": [
+        "coach-20260428-2121.json"
+      ]
+    }
+  ],
   "garmin": {
     "last_synced": null,
     "recent_activities": [],
