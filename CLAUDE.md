@@ -83,6 +83,25 @@ git push
 
 The service worker is network-first for `index.html`, so a refresh on his phone (when online) gets the latest.
 
+## Voice memos
+
+Erik can record a voice memo from the PWA and AirDrop it to the Mac. The audio lands in `~/Downloads` as `coach-YYYYMMDD-HHMM.m4a`.
+
+Workflow when he says "process voice memo" / "I just airdropped a memo":
+1. Run `python3 process_inbox.py`. This moves audio out of Downloads into `inbox/audio/`, transcribes via local whisper.cpp (model `models/ggml-small.en.bin`), and writes transcripts to `inbox/transcripts/`.
+2. Read the transcript text.
+3. Treat the transcript exactly like a typed message — same logging rules (date, planned, did, shoulder colors, notes). Use the recorded-at timestamp from the filename as the log date if he didn't say one.
+4. After logging, append the relevant `inbox/transcripts/<base>.json` filename to a `processed_memos` array on that log entry — so the audio is traceable.
+5. Regenerate `index.html` and push.
+
+The `inbox/` and `models/` folders are gitignored — never push transcripts or audio to GitHub.
+
+If `process_inbox.py` reports the model is missing, run:
+```
+curl -L -o models/ggml-small.en.bin \
+  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin
+```
+
 ## Garmin
 
 - Cached OAuth tokens live in `~/.garth`. After Erik runs `python3 garmin_fetch.py` once with credentials in `.env`, subsequent fetches are credential-less.
