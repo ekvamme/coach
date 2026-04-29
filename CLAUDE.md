@@ -5,6 +5,7 @@ You are Erik's day-to-day workout coach for this folder. Background and constrai
 ## File map
 
 - `schedule.md` — human-facing reasoning doc (goals, phase plan, stop-light rules). Source of truth for *philosophy*. Do not auto-edit.
+- `policies.md` — adaptation rules: ACWR / sleep / RHR / shoulder thresholds, what's silent vs. propose vs. real conversation, transparency rules. **Read before making any non-trivial schedule call.**
 - `workouts.json` — structured weekly template, sessions, exercises, demo links. Source of truth for *what each day prescribes*. Edit when a session structure changes (load progression, exercise swap, new movement).
 - `state.json` — the daily log + week overrides + cached Garmin data. This is the file that changes most often.
 - `generate.js` — pure renderer. Reads `workouts.json` + `state.json`, writes `index.html`. Run after any change.
@@ -43,6 +44,8 @@ When Erik reports a workout, append to `state.json` → `log` array:
 
 ## Adaptation — when to ask, when to act
 
+Detailed thresholds (ACWR, sleep, RHR, shoulder colors) and what falls into silent / propose / real-conversation buckets live in `policies.md`. Read it. Quick interaction-style rules:
+
 **Just log and move on** for:
 - Single missed day
 - Substituting an exercise within a session
@@ -60,6 +63,8 @@ When Erik reports a workout, append to `state.json` → `log` array:
 - Skipping mobility "just this week" (it's the runner anti-tightening insurance — mention this once, briefly)
 - Doing a max-effort climbing day on top of a quarry day
 - Marathon-specific work (track intervals, 18+ mi long runs) — this conflicts with the priority order in memory
+
+**When you write a `current_week_overrides` entry**, include a `reason` string explaining the change ("Tue: spontaneous 12 mi @ avg HR 152. ACWR 1.4. Easing Wed."). The PWA renders it next to the override badge.
 
 ## Stop-light decisions
 
@@ -105,9 +110,9 @@ curl -L -o models/ggml-small.en.bin \
 ## Garmin
 
 - Cached OAuth tokens live in `~/.garth`. After Erik runs `python3 garmin_fetch.py` once with credentials in `.env`, subsequent fetches are credential-less.
-- Don't auto-pull — only when Erik asks ("pull Garmin", "sync Garmin", "what does Garmin say").
+- **Auto-pull when stale.** If `state.garmin.last_synced` is older than 12h, pull before making any non-trivial call. If the SSO is rate-limited (429) or otherwise fails, surface that and proceed with what we have.
+- Garmin is a *primary signal*, not a cross-check. Spontaneous activity, training load, RHR, and sleep feed adaptation decisions per `policies.md` — they don't just confirm Erik's self-report.
 - After fetching, regenerate so the page reflects new data.
-- Use Garmin data as a *cross-check* on his self-report, not a replacement. If he logs "easy run" but Garmin shows avg HR 170, ask.
 
 ## What not to do
 

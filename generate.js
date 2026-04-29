@@ -234,7 +234,10 @@ function clientRenderer() {
       '<span class="duration">' + esc(sessionDef.duration || "") + '</span>' +
       (session._override ? '<span class="badge override">overridden</span>' : "") +
     '</div>';
-    return '<div class="session">' + meta +
+    const reason = session._override && session.reason
+      ? '<div class="override-reason">' + esc(session.reason) + '</div>'
+      : "";
+    return '<div class="session">' + meta + reason +
       notesHTML(sessionDef.notes) +
       blockHTML("Warm-up", sessionDef.warmup) +
       blockHTML("Main", sessionDef.exercises) +
@@ -377,6 +380,7 @@ const html = `<!doctype html>
   .card.today header h2 { font-size: 22px; margin: 0 0 10px; }
   .session-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; color: var(--dim); font-size: 13px; }
   .badge.override { background: var(--accent); color: #0a0d12; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .override-reason { color: var(--accent); font-size: 12px; margin: 0 0 10px; line-height: 1.4; }
   .notes { padding-left: 18px; margin: 6px 0 10px; }
   .notes li { color: var(--dim); font-size: 14px; margin-bottom: 4px; }
   .ex-list { list-style: none; padding: 0; margin: 0; }
