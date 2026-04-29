@@ -13,11 +13,24 @@
       "planned": "Strength A",
       "did": "Strength A; tested TGU at 20 lb \u2014 too heavy, dropping back to 17.5",
       "shoulder_during": "green",
+      "shoulder_post_24h": "green",
+      "sleep_side_tolerance": null,
+      "notes": "Post-workout ~3/10 anterior + superior left shoulder \u2014 confirmed average / baseline (not a flare). 20 lb TGU test failed; hold at 17.5, retest in 2 weeks. AM next-day check: 0\u20131/10, much better.",
+      "processed_memos": [
+        "coach-20260428-2121.json",
+        "coach-20260429-0756.json"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "planned": "Run \u2014 hilly zone 2",
+      "did": "5.4 mi run in 50 min (\u22489:15/mi pace)",
+      "shoulder_during": "green",
       "shoulder_post_24h": null,
       "sleep_side_tolerance": null,
-      "notes": "Post-workout ~3/10 anterior + superior left shoulder \u2014 confirmed average / baseline (not a flare). 20 lb TGU test failed; hold at 17.5, retest in 2 weeks.",
+      "notes": "1/10 anterior shoulder burning during run, very mild.",
       "processed_memos": [
-        "coach-20260428-2121.json"
+        "coach-20260429-1219.json"
       ]
     }
   ],
