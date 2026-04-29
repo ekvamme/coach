@@ -1,0 +1,14 @@
+certifi==2026.4.22
+cffi==2.0.0
+charset-normalizer==3.4.7
+curl_cffi==0.15.0
+garminconnect==0.3.3
+idna==3.13
+markdown-it-py==4.0.0
+mdurl==0.1.2
+pycparser==3.0
+Pygments==2.20.0
+requests==2.33.1
+rich==15.0.0
+ua-generator==2.0.26
+urllib3==2.6.3
