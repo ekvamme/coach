@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 // Generates index.html from workouts.json + state.json.
+// Today / This week / Last 14 days panels render client-side from embedded JSON,
+// so the page picks up the correct day every time it opens — no daily regen needed.
 // Pure renderer — does not modify state.
 
 const fs = require("fs");
@@ -9,7 +11,12 @@ const ROOT = __dirname;
 const workouts = JSON.parse(fs.readFileSync(path.join(ROOT, "workouts.json"), "utf8"));
 const state = JSON.parse(fs.readFileSync(path.join(ROOT, "state.json"), "utf8"));
 
-// ---------- date helpers (local time, not UTC) ----------
+// Escape `<` so JSON content can't break out of <script type="application/json">.
+function safeJSON(obj) {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
+// ---------- date helpers (local time, not UTC) — used for the "generated" footer only ----------
 function todayISO() {
   const d = new Date();
   const y = d.getFullYear();
@@ -21,40 +28,11 @@ function isoToDate(iso) {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
-function dateToISO(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 function dayName(iso) {
   return ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"][isoToDate(iso).getDay()];
 }
-function fmtFull(iso) {
-  const d = isoToDate(iso);
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-}
-function addDays(iso, n) {
-  const d = isoToDate(iso);
-  d.setDate(d.getDate() + n);
-  return dateToISO(d);
-}
 
-// ---------- planning ----------
-function plannedSessionForDate(iso) {
-  // current_week_overrides take precedence (keyed by ISO date)
-  const ov = state.current_week_overrides || {};
-  if (ov[iso]) return { ...ov[iso], _override: true };
-  const dn = dayName(iso);
-  const tmpl = workouts.weekly_template[dn];
-  return { ...tmpl, _override: false };
-}
-
-function logEntryFor(iso) {
-  return (state.log || []).find((e) => e.date === iso) || null;
-}
-
-// ---------- HTML helpers ----------
+// ---------- HTML helpers (server side — used for static panels only) ----------
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 const linkFor = (name) => workouts.demo_links[name] || null;
 
@@ -77,134 +55,7 @@ function exerciseRow(ex) {
     </li>`;
 }
 
-function blockHTML(title, items) {
-  if (!items || items.length === 0) return "";
-  return `
-    <section class="block">
-      <h3>${esc(title)}</h3>
-      <ul class="ex-list">${items.map(exerciseRow).join("")}</ul>
-    </section>`;
-}
-
-function notesHTML(notes) {
-  if (!notes || notes.length === 0) return "";
-  return `<ul class="notes">${notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`;
-}
-
-function sessionHTML(session) {
-  if (!session) return `<p>No session planned.</p>`;
-  const sessionDef = workouts.sessions[session.session_id] || workouts.sessions.rest;
-  const cooldownItems = sessionDef.cooldown_ref
-    ? (workouts[sessionDef.cooldown_ref] && workouts[sessionDef.cooldown_ref].items) || []
-    : sessionDef.cooldown;
-
-  return `
-    <div class="session">
-      <div class="session-meta">
-        <span class="duration">${esc(sessionDef.duration || "")}</span>
-        ${session._override ? `<span class="badge override">overridden</span>` : ""}
-      </div>
-      ${notesHTML(sessionDef.notes)}
-      ${blockHTML("Warm-up", sessionDef.warmup)}
-      ${blockHTML("Main", sessionDef.exercises)}
-      ${blockHTML(sessionDef.cooldown_ref ? cooldownTitleFor(sessionDef.cooldown_ref) : "Cool-down", cooldownItems)}
-    </div>`;
-}
-
-function cooldownTitleFor(ref) {
-  const block = workouts[ref];
-  return (block && block.title) || "Cool-down";
-}
-
-function statusDot(status) {
-  const cls = status ? `dot ${status}` : `dot empty`;
-  return `<span class="${cls}" title="${esc(status || "no log")}"></span>`;
-}
-
-// ---------- panels ----------
-function todayPanel() {
-  const iso = todayISO();
-  const planned = plannedSessionForDate(iso);
-  const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
-  const todaysLog = logEntryFor(iso);
-
-  return `
-    <section class="card today">
-      <header>
-        <div class="kicker">Today · ${esc(fmtFull(iso))}</div>
-        <h2>${esc(sessionDef.title)}</h2>
-      </header>
-      ${sessionHTML(planned)}
-      ${todaysLog ? loggedSummary(todaysLog) : `<p class="dim">Not logged yet. Tell Claude how it went when you're done.</p>`}
-    </section>`;
-}
-
-function loggedSummary(entry) {
-  return `
-    <div class="logged">
-      <h3>Logged</h3>
-      <ul class="kv">
-        <li><span class="k">Did</span><span class="v">${esc(entry.did || "—")}</span></li>
-        <li><span class="k">Shoulder during</span><span class="v">${statusDot(entry.shoulder_during)} ${esc(entry.shoulder_during || "")}</span></li>
-        <li><span class="k">Shoulder post-24h</span><span class="v">${statusDot(entry.shoulder_post_24h)} ${esc(entry.shoulder_post_24h || "")}</span></li>
-        ${entry.sleep_side_tolerance ? `<li><span class="k">Sleep tolerance</span><span class="v">${esc(entry.sleep_side_tolerance)}</span></li>` : ""}
-        ${entry.notes ? `<li><span class="k">Notes</span><span class="v">${esc(entry.notes)}</span></li>` : ""}
-      </ul>
-    </div>`;
-}
-
-function weekPanel() {
-  const today = todayISO();
-  const weekStart = addDays(today, -isoToDate(today).getDay()); // Sunday-start week
-  const days = [];
-  for (let i = 0; i < 7; i++) {
-    const iso = addDays(weekStart, i);
-    const planned = plannedSessionForDate(iso);
-    const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
-    const log = logEntryFor(iso);
-    const isToday = iso === today;
-    days.push(`
-      <li class="${isToday ? "today" : ""}">
-        <div class="weekday">${esc(dayName(iso).slice(0,3).toUpperCase())}</div>
-        <div class="weekdate">${esc(iso.slice(5))}</div>
-        <div class="weeklabel">${esc(sessionDef.title)}</div>
-        <div class="weekstatus">${statusDot(log && log.shoulder_during)}${statusDot(log && log.shoulder_post_24h)}</div>
-      </li>`);
-  }
-  return `
-    <section class="card">
-      <h2>This week</h2>
-      <ul class="weekgrid">${days.join("")}</ul>
-    </section>`;
-}
-
-function streakPanel() {
-  const today = todayISO();
-  const N = 14;
-  const cells = [];
-  for (let i = N - 1; i >= 0; i--) {
-    const iso = addDays(today, -i);
-    const log = logEntryFor(iso);
-    cells.push(`
-      <div class="streakcell" title="${esc(iso)}">
-        <div class="streakdate">${esc(iso.slice(8))}</div>
-        <div class="streakdots">${statusDot(log && log.shoulder_during)}${statusDot(log && log.shoulder_post_24h)}</div>
-      </div>`);
-  }
-  return `
-    <section class="card">
-      <h2>Last 14 days · shoulder</h2>
-      <p class="dim small">Top dot = during exercise · Bottom dot = post-24h. Drift is the killer, not absolute level.</p>
-      <div class="streak">${cells.join("")}</div>
-      <div class="legend">
-        <span><span class="dot green"></span> green</span>
-        <span><span class="dot yellow"></span> yellow</span>
-        <span><span class="dot red"></span> red</span>
-        <span><span class="dot empty"></span> no log</span>
-      </div>
-    </section>`;
-}
-
+// ---------- static (server-rendered) panels ----------
 function mobilityPanel() {
   return `
     <section class="card">
@@ -282,6 +133,211 @@ function howToPanel() {
       </ul>
       <p class="dim small">Claude will update <code>state.json</code> and regenerate this page. If you want the schedule reshuffled (e.g., move Tue → Wed), Claude will ask first.</p>
     </section>`;
+}
+
+// ---------- client-side renderer ----------
+// Defined as a regular function so we can stringify it without escaping
+// every backtick. Runs in the browser; never invoked in Node.
+function clientRenderer() {
+  const workouts = JSON.parse(document.getElementById("data-workouts").textContent);
+  const state = JSON.parse(document.getElementById("data-state").textContent);
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+  function isoToDate(iso) {
+    const p = iso.split("-").map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  }
+  function dateToISO(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+  function dayName(iso) {
+    return ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"][isoToDate(iso).getDay()];
+  }
+  function fmtFull(iso) {
+    return isoToDate(iso).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  }
+  function addDays(iso, n) {
+    const d = isoToDate(iso);
+    d.setDate(d.getDate() + n);
+    return dateToISO(d);
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function linkFor(name) { return workouts.demo_links[name] || null; }
+
+  function exerciseRow(ex) {
+    const link = linkFor(ex.name);
+    const nameHtml = link
+      ? '<a href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(ex.name) + '</a>'
+      : esc(ex.name);
+    const tag = ex.tag === "mobility-insurance"
+      ? ' <span class="tag mob">mobility-insurance</span>' : "";
+    const load = ex.load ? '<div class="ex-load">' + esc(ex.load) + '</div>' : "";
+    const note = ex.note ? '<div class="note">' + esc(ex.note) + '</div>' : "";
+    return '<li class="ex">' +
+      '<div class="ex-head">' +
+        '<span class="ex-name">' + nameHtml + tag + '</span>' +
+        '<span class="ex-pres">' + esc(ex.prescription || "") + '</span>' +
+      '</div>' +
+      load + note +
+    '</li>';
+  }
+
+  function blockHTML(title, items) {
+    if (!items || items.length === 0) return "";
+    return '<section class="block"><h3>' + esc(title) + '</h3>' +
+      '<ul class="ex-list">' + items.map(exerciseRow).join("") + '</ul>' +
+    '</section>';
+  }
+
+  function notesHTML(notes) {
+    if (!notes || notes.length === 0) return "";
+    return '<ul class="notes">' + notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul>';
+  }
+
+  function cooldownTitleFor(ref) {
+    const block = workouts[ref];
+    return (block && block.title) || "Cool-down";
+  }
+
+  function statusDot(status) {
+    const cls = status ? "dot " + status : "dot empty";
+    return '<span class="' + cls + '" title="' + esc(status || "no log") + '"></span>';
+  }
+
+  function plannedSessionForDate(iso) {
+    const ov = state.current_week_overrides || {};
+    if (ov[iso]) return Object.assign({}, ov[iso], { _override: true });
+    const tmpl = workouts.weekly_template[dayName(iso)];
+    return Object.assign({}, tmpl, { _override: false });
+  }
+
+  function logEntryFor(iso) {
+    return (state.log || []).find(function (e) { return e.date === iso; }) || null;
+  }
+
+  function sessionHTML(session) {
+    if (!session) return "<p>No session planned.</p>";
+    const sessionDef = workouts.sessions[session.session_id] || workouts.sessions.rest;
+    const cooldownItems = sessionDef.cooldown_ref
+      ? ((workouts[sessionDef.cooldown_ref] && workouts[sessionDef.cooldown_ref].items) || [])
+      : sessionDef.cooldown;
+    const meta = '<div class="session-meta">' +
+      '<span class="duration">' + esc(sessionDef.duration || "") + '</span>' +
+      (session._override ? '<span class="badge override">overridden</span>' : "") +
+    '</div>';
+    return '<div class="session">' + meta +
+      notesHTML(sessionDef.notes) +
+      blockHTML("Warm-up", sessionDef.warmup) +
+      blockHTML("Main", sessionDef.exercises) +
+      blockHTML(sessionDef.cooldown_ref ? cooldownTitleFor(sessionDef.cooldown_ref) : "Cool-down", cooldownItems) +
+    '</div>';
+  }
+
+  function loggedSummary(entry) {
+    return '<div class="logged"><h3>Logged</h3>' +
+      '<ul class="kv">' +
+        '<li><span class="k">Did</span><span class="v">' + esc(entry.did || "—") + '</span></li>' +
+        '<li><span class="k">Shoulder during</span><span class="v">' + statusDot(entry.shoulder_during) + ' ' + esc(entry.shoulder_during || "") + '</span></li>' +
+        '<li><span class="k">Shoulder post-24h</span><span class="v">' + statusDot(entry.shoulder_post_24h) + ' ' + esc(entry.shoulder_post_24h || "") + '</span></li>' +
+        (entry.sleep_side_tolerance ? '<li><span class="k">Sleep tolerance</span><span class="v">' + esc(entry.sleep_side_tolerance) + '</span></li>' : "") +
+        (entry.notes ? '<li><span class="k">Notes</span><span class="v">' + esc(entry.notes) + '</span></li>' : "") +
+      '</ul>' +
+    '</div>';
+  }
+
+  function todayPanel() {
+    const iso = todayISO();
+    const planned = plannedSessionForDate(iso);
+    const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
+    const log = logEntryFor(iso);
+    return '<section class="card today">' +
+      '<header>' +
+        '<div class="kicker">Today · ' + esc(fmtFull(iso)) + '</div>' +
+        '<h2>' + esc(sessionDef.title) + '</h2>' +
+      '</header>' +
+      sessionHTML(planned) +
+      (log ? loggedSummary(log) : '<p class="dim">Not logged yet. Tell Claude how it went when you\'re done.</p>') +
+    '</section>';
+  }
+
+  function weekPanel() {
+    const today = todayISO();
+    const weekStart = addDays(today, -isoToDate(today).getDay());
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const iso = addDays(weekStart, i);
+      const planned = plannedSessionForDate(iso);
+      const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
+      const log = logEntryFor(iso);
+      const isToday = iso === today;
+      days.push(
+        '<li class="' + (isToday ? "today" : "") + '">' +
+          '<div class="weekday">' + esc(dayName(iso).slice(0,3).toUpperCase()) + '</div>' +
+          '<div class="weekdate">' + esc(iso.slice(5)) + '</div>' +
+          '<div class="weeklabel">' + esc(sessionDef.title) + '</div>' +
+          '<div class="weekstatus">' + statusDot(log && log.shoulder_during) + statusDot(log && log.shoulder_post_24h) + '</div>' +
+        '</li>'
+      );
+    }
+    return '<section class="card"><h2>This week</h2>' +
+      '<ul class="weekgrid">' + days.join("") + '</ul>' +
+    '</section>';
+  }
+
+  function streakPanel() {
+    const today = todayISO();
+    const N = 14;
+    const cells = [];
+    for (let i = N - 1; i >= 0; i--) {
+      const iso = addDays(today, -i);
+      const log = logEntryFor(iso);
+      cells.push(
+        '<div class="streakcell" title="' + esc(iso) + '">' +
+          '<div class="streakdate">' + esc(iso.slice(8)) + '</div>' +
+          '<div class="streakdots">' + statusDot(log && log.shoulder_during) + statusDot(log && log.shoulder_post_24h) + '</div>' +
+        '</div>'
+      );
+    }
+    return '<section class="card">' +
+      '<h2>Last 14 days · shoulder</h2>' +
+      '<p class="dim small">Top dot = during exercise · Bottom dot = post-24h. Drift is the killer, not absolute level.</p>' +
+      '<div class="streak">' + cells.join("") + '</div>' +
+      '<div class="legend">' +
+        '<span><span class="dot green"></span> green</span>' +
+        '<span><span class="dot yellow"></span> yellow</span>' +
+        '<span><span class="dot red"></span> red</span>' +
+        '<span><span class="dot empty"></span> no log</span>' +
+      '</div>' +
+    '</section>';
+  }
+
+  let lastDay = todayISO();
+  function renderDynamic() {
+    document.getElementById("today-panel").innerHTML = todayPanel();
+    document.getElementById("week-panel").innerHTML = weekPanel();
+    document.getElementById("streak-panel").innerHTML = streakPanel();
+    lastDay = todayISO();
+  }
+  renderDynamic();
+
+  // Re-render at the next day boundary so an open PWA picks it up without a refresh.
+  setInterval(function () {
+    if (todayISO() !== lastDay) renderDynamic();
+  }, 60000);
+
+  // ...and when the PWA comes back to the foreground after being backgrounded.
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && todayISO() !== lastDay) renderDynamic();
+  });
 }
 
 // ---------- assembly ----------
@@ -402,20 +458,30 @@ const html = `<!doctype html>
 <body>
   <div class="wrap">
     <h1>Coach</h1>
-    ${todayPanel()}
+    <div id="today-panel"></div>
     ${recorderPanel()}
-    ${weekPanel()}
-    ${streakPanel()}
+    <div id="week-panel"></div>
+    <div id="streak-panel"></div>
     ${mobilityPanel()}
     ${garminPanel()}
     ${howToPanel()}
     <footer class="foot">Generated ${esc(new Date().toISOString())} · Phase: ${esc(state.user && state.user.phase || "—")}</footer>
   </div>
+
+  <script id="data-workouts" type="application/json">${safeJSON(workouts)}</script>
+  <script id="data-state" type="application/json">${safeJSON(state)}</script>
+
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js").catch(() => {});
     }
+  </script>
 
+  <script>
+    (${clientRenderer.toString()})();
+  </script>
+
+  <script>
     (function () {
       const btn = document.getElementById("rec-btn");
       const timerEl = document.getElementById("rec-timer");
@@ -673,4 +739,4 @@ const html = `<!doctype html>
 `;
 
 fs.writeFileSync(path.join(ROOT, "index.html"), html);
-console.log(`Wrote index.html (${html.length} bytes) for ${todayISO()} (${dayName(todayISO())}).`);
+console.log(`Wrote index.html (${html.length} bytes) at ${todayISO()} (${dayName(todayISO())}). Day rendering is now client-side.`);
