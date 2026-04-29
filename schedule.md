@@ -78,6 +78,8 @@ Operating standard: **standard pain-monitoring model.** Zero post-workout pain i
 - **Yellow** — burning lingers more than 24 hours, sleep regresses for one night, *or* burning intensity is creeping up week over week. Hold loads flat, look for the trigger (most likely home tension board, then climbing intensity, then the top end of bottom-up TGU). If it persists 2 weeks, dial the suspected trigger back 10–20%.
 - **Red** — pain *during* exercise, sharp pain anywhere, sleep regresses multiple nights, or symptoms progressively worse for 2+ weeks. Cut climbing volume in half, drop board/fingerboard work, message your PT.
 
+**Drift anchor (confirmed 2026-04-28):** post-workout pain runs ~3/10 in the *anterior + superior* left shoulder. That number is the baseline to compare against, not the threshold to react to. A single 4/10 day means nothing; sustained 4+/10 across 2+ sessions, *or* baseline pattern shifting to a new location, is real drift.
+
 What to track weekly so you can spot drift: did this week's post-workout burning *resolve faster, the same, or slower* than last week's? Trend matters more than any single session.
 
 ## Weekly template
@@ -125,7 +127,7 @@ Warm-up: foam roller t-spine extension 2 min · band pull-aparts 2×15 · band E
 | Exercise | Sets × reps | Load |
 |---|---|---|
 | Pull-ups | 3×8 | bodyweight; add a 3-sec lower when 3×8 feels easy |
-| Bottom-up TGU | 3 / side | 17.5 lb; test 20 lb every 2 wk once available |
+| Bottom-up TGU | 3 / side | 17.5 lb. Tested 20 lb on 2026-04-28 — too heavy. Next test: 2026-05-12. |
 | Single-leg row, balance | 3×8 / side | 20 lb |
 | Bottom-up KB front carry @ 90° | 2 × 30 m / side | 20 lb |
 | Dead bug | 3×10 | bodyweight |
