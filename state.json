@@ -38,6 +38,30 @@
     "last_synced": "2026-04-29",
     "recent_activities": [
       {
+        "date": "2026-04-29",
+        "type": "Trail run",
+        "detail": "5.3 mi \u00b7 49:41 \u00b7 avg HR 156",
+        "raw_type": "trail_running",
+        "elevation_gain_m": 184.34000000357628,
+        "training_load": 174.64016723632812
+      },
+      {
+        "date": "2026-04-21",
+        "type": "Trail run",
+        "detail": "4.4 mi \u00b7 42:13 \u00b7 avg HR 150",
+        "raw_type": "trail_running",
+        "elevation_gain_m": 185.5600000023842,
+        "training_load": 131.85662841796875
+      },
+      {
+        "date": "2026-04-20",
+        "type": "Climb",
+        "detail": "59:56 \u00b7 avg HR 123",
+        "raw_type": "indoor_climbing",
+        "elevation_gain_m": 96.01999999955297,
+        "training_load": 49.852783203125
+      },
+      {
         "date": "2026-04-11",
         "type": "Trail run",
         "detail": "3.3 mi \u00b7 46:37 \u00b7 avg HR 152",
@@ -412,34 +436,18 @@
         "raw_type": "lap_swimming",
         "elevation_gain_m": null,
         "training_load": 32.02729797363281
-      },
-      {
-        "date": "2025-04-11",
-        "type": "Swim",
-        "detail": "1.0 mi \u00b7 39:08 \u00b7 avg HR 130",
-        "raw_type": "lap_swimming",
-        "elevation_gain_m": null,
-        "training_load": 42.316558837890625
-      },
-      {
-        "date": "2025-04-09",
-        "type": "Trail run",
-        "detail": "8.7 mi \u00b7 1:30:27 \u00b7 avg HR 150",
-        "raw_type": "trail_running",
-        "elevation_gain_m": 349.3799999952316,
-        "training_load": 188.9047393798828
-      },
-      {
-        "date": "2025-04-04",
-        "type": "Trail run",
-        "detail": "5.8 mi \u00b7 56:06 \u00b7 avg HR 147",
-        "raw_type": "trail_running",
-        "elevation_gain_m": 155.6899999976158,
-        "training_load": 139.24481201171875
       }
     ],
     "recent_sleep": [],
     "recent_resting_hr": [
+      {
+        "date": "2026-04-29",
+        "bpm": 129
+      },
+      {
+        "date": "2026-04-21",
+        "bpm": 148
+      },
       {
         "date": "2026-04-20",
         "bpm": 109
