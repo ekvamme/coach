@@ -111,6 +111,81 @@
   .qm-btn.share { color: var(--accent); border-color: var(--accent); }
   .qm-btn.del { color: var(--red); border-color: var(--line); }
   .qm-btn:active { opacity: 0.6; }
+  .timer-slot { display: block; margin-top: 8px; }
+  .timer-slot:empty { display: none; }
+  .timer-slot:has(.timer-btn:only-child) { margin-top: 6px; }
+  .timer-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .timer-btn:active { opacity: 0.6; }
+  .timer-btn.running { background: var(--accent); color: #0a0d12; border-color: var(--accent); font-weight: 600; }
+  .timer-btn.paused { background: transparent; color: var(--accent); border-color: var(--accent); opacity: 0.7; }
+  .timer-cancel {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--dim);
+    border-radius: 14px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 6px;
+    font-family: inherit;
+  }
+  .timer-cancel:active { opacity: 0.6; }
+  .timer-phase { font-size: 11px; color: var(--accent); font-style: italic; margin-top: 6px; }
+  .timer-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .timer-fill { height: 100%; background: var(--accent); width: 0%; }
+  .complete-btn {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+  }
+  .complete-btn:active { opacity: 0.7; }
+  .complete-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    margin-top: 14px;
+  }
+  .complete-banner .check { color: var(--green); font-weight: 700; font-size: 18px; flex-shrink: 0; }
+  .complete-banner .complete-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .complete-banner .complete-text strong { color: var(--green); font-size: 14px; }
+  .complete-banner .complete-text span { color: var(--dim); font-size: 12px; }
+  .complete-undo {
+    background: transparent;
+    border: 0;
+    color: var(--dim);
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: inherit;
+    padding: 4px 6px;
+  }
+  .check-badge { color: var(--green); font-size: 16px; margin-left: 6px; vertical-align: middle; }
+  .weekcheck { color: var(--green); font-size: 11px; margin-left: 3px; font-weight: 700; }
+  .weekgrid li.done { border-color: var(--green); }
+  .streakcell.done { border-color: var(--green); background: rgba(74, 222, 128, 0.08); }
 </style>
 </head>
 <body>
@@ -144,37 +219,41 @@
     <section class="card">
       <h2>Daily morning mobility (5–7 min, before coffee)</h2>
       <ul class="ex-list">
-    <li class="ex">
+    <li class="ex" data-prescription="8 each">
       <div class="ex-head">
         <span class="ex-name"><a href="https://www.youtube.com/watch?v=OWebrsecy7g" target="_blank" rel="noopener">Cat-cow + thread the needle</a></span>
         <span class="ex-pres">8 each</span>
       </div>
       
       
+      <span class="timer-slot"></span>
     </li>
-    <li class="ex">
+    <li class="ex" data-prescription="5 each side">
       <div class="ex-head">
         <span class="ex-name"><a href="https://www.youtube.com/watch?v=-CiWQ2IvY34" target="_blank" rel="noopener">World's greatest stretch</a></span>
         <span class="ex-pres">5 each side</span>
       </div>
       
       
+      <span class="timer-slot"></span>
     </li>
-    <li class="ex">
+    <li class="ex" data-prescription="8 each side">
       <div class="ex-head">
         <span class="ex-name"><a href="https://www.youtube.com/watch?v=HUZimFZJZWU" target="_blank" rel="noopener">90/90 hip switches</a></span>
         <span class="ex-pres">8 each side</span>
       </div>
       
       
+      <span class="timer-slot"></span>
     </li>
-    <li class="ex">
+    <li class="ex" data-prescription="60 s each side">
       <div class="ex-head">
         <span class="ex-name"><a href="https://www.youtube.com/watch?v=nTJaGnjUkTY" target="_blank" rel="noopener">Couch stretch</a></span>
         <span class="ex-pres">60 s each side</span>
       </div>
       
       
+      <span class="timer-slot"></span>
     </li></ul>
     </section>
     
@@ -222,10 +301,10 @@
       </ul>
       <p class="dim small">Claude will update <code>state.json</code> and regenerate this page. If you want the schedule reshuffled (e.g., move Tue → Wed), Claude will ask first.</p>
     </section>
-    <footer class="foot">Generated 2026-04-29T19:23:56.098Z · Phase: 1 — Base + shoulder</footer>
+    <footer class="foot">Generated 2026-04-29T19:39:07.467Z · Phase: 1 — Base + shoulder</footer>
   </div>
 
-  <script id="data-workouts" type="application/json">{"demo_links":{"Pull-ups":"https://www.youtube.com/results?search_query=strict+pull+up+tutorial","Bottom-up TGU":"https://www.youtube.com/watch?v=Z_YHkXGiieU","Single-leg row, balance":"https://www.youtube.com/watch?v=SF5cUMD5LYI","Bottom-up KB front carry @ 90°":"https://www.youtube.com/watch?v=UpBzi0HIdAI","Dead bug":"https://www.youtube.com/watch?v=bxn9FBrt4-A","Side plank":"https://www.youtube.com/watch?v=iNbH7_edNI8","Pallof press (band)":"https://www.youtube.com/watch?v=dBAmQ9bx3JA","Push-up (decline close-grip)":"https://www.youtube.com/watch?v=jssZppXpG4k","Cossack squat":"https://www.youtube.com/watch?v=tpczTeSkHz0","ATG / Bulgarian split squat":"https://www.youtube.com/watch?v=qfpkwZlG-cs","Single-leg RDL":"https://www.youtube.com/watch?v=Zfr6wizR8rs","DB floor press":"https://www.youtube.com/watch?v=AqYFvc9t_vU","Tibialis raises":"https://www.youtube.com/watch?v=O8ZcXfwFuqs","Hollow body hold":"https://www.youtube.com/watch?v=LlDNef_Ztsc","Cat-cow + thread the needle":"https://www.youtube.com/watch?v=OWebrsecy7g","World's greatest stretch":"https://www.youtube.com/watch?v=-CiWQ2IvY34","90/90 hip switches":"https://www.youtube.com/watch?v=HUZimFZJZWU","Couch stretch":"https://www.youtube.com/watch?v=nTJaGnjUkTY","Standing calf stretch":"https://www.youtube.com/watch?v=osYF1clbyMs","Pigeon stretch":"https://www.youtube.com/watch?v=Z3t7KrsvHI4","Pancake stretch":"https://www.youtube.com/watch?v=Zl1R9iGWt18","Frog stretch":"https://www.youtube.com/watch?v=hyTgVKeFU1k","Deep squat hold":"https://www.youtube.com/watch?v=YjjZnQpXB2U","Hip CARs":"https://www.youtube.com/watch?v=zbH4XmSREoc","Ankle dorsiflexion":"https://www.youtube.com/watch?v=u3NbKOXl75k","Foam roller t-spine":"https://www.youtube.com/watch?v=hJuoqOHLbzY","Band pull-aparts":"https://www.youtube.com/watch?v=D-3bRfprMGI","Band external rotation":"https://www.youtube.com/watch?v=NMj88M5eu8A","Scap push-ups":"https://www.youtube.com/watch?v=LeMk15TN0No","Prone Y-T-W":"https://www.youtube.com/watch?v=SSy4XHJHIvw","ARC training":"https://www.youtube.com/@HoopersBeta"},"morning_mobility":{"title":"Daily morning mobility (5–7 min, before coffee)","items":[{"name":"Cat-cow + thread the needle","prescription":"8 each"},{"name":"World's greatest stretch","prescription":"5 each side"},{"name":"90/90 hip switches","prescription":"8 each side"},{"name":"Couch stretch","prescription":"60 s each side"}]},"post_run_mobility":{"title":"Post-run mobility (10 min, non-negotiable on long-run day)","items":[{"name":"Standing calf stretch","prescription":"60 s each, knee-straight + knee-bent"},{"name":"Active hamstring scoop","prescription":"10 each"},{"name":"Couch stretch","prescription":"90 s each side"},{"name":"Pigeon stretch","prescription":"60 s each side"},{"name":"Foam roller","prescription":"90 s per area: glutes, IT band, quads, calves"}]},"long_mobility_block":{"title":"Longer mobility block (15–20 min, twice/week — Friday + Sunday)","items":[{"name":"Pancake stretch","prescription":"active + passive"},{"name":"Frog stretch","prescription":"easy hold"},{"name":"Deep squat hold","prescription":"2 min"},{"name":"Hip CARs","prescription":"5 each direction each side"},{"name":"Ankle dorsiflexion","prescription":"10 each side, knee-to-wall"}]},"weekly_template":{"monday":{"session_id":"climb_quarry","label":"Climb #1 — Auburn Quarry rope solo"},"tuesday":{"session_id":"strength_a","label":"Strength A — pull / cuff / core"},"wednesday":{"session_id":"run_hilly_z2","label":"Run — hilly zone 2"},"thursday":{"session_id":"strength_b","label":"Strength B — push / hinge / cuff"},"friday":{"session_id":"mobility_or_rest","label":"Mobility only OR rest"},"saturday":{"session_id":"long_day","label":"Long day — see Saturday alternates"},"sunday":{"session_id":"rest","label":"Rest"}},"sessions":{"climb_quarry":{"title":"Climb #1 — Auburn Quarry rope solo","duration":"~60 min on rock + bike commute","notes":["Bike ride over IS your warm-up (zone 2)","10 min easy traversing / mobile-shoulder warm-up at the wall","Moderate intensity. Avoid max-effort cranking on left arm in compromised positions (deep underclings, gastons, full lock-offs)","Stop while you still have one good lap left — leaving reps on the table is the point right now","Cool-down bike ride; band ER + t-spine extension at home"],"warmup":[],"exercises":[],"cooldown":[{"name":"Band external rotation","prescription":"3×15 / side"},{"name":"Foam roller t-spine","prescription":"1–2 min"}]},"strength_a":{"title":"Strength A — pull / cuff / core","duration":"50–60 min","warmup":[{"name":"Foam roller t-spine","prescription":"2 min"},{"name":"Band pull-aparts","prescription":"2×15"},{"name":"Band external rotation","prescription":"2×15 / side"}],"exercises":[{"name":"Pull-ups","prescription":"3×8","load":"bodyweight; add a 3-sec lower when 3×8 feels easy"},{"name":"Bottom-up TGU","prescription":"3 / side","load":"17.5 lb; test 20 lb every 2 wk"},{"name":"Single-leg row, balance","prescription":"3×8 / side","load":"20 lb"},{"name":"Bottom-up KB front carry @ 90°","prescription":"2 × 30 m / side","load":"20 lb"},{"name":"Dead bug","prescription":"3×10","load":"bodyweight"},{"name":"Side plank","prescription":"3 × 30 s / side","load":"bodyweight"},{"name":"Pallof press (band)","prescription":"3×10 / side","load":"band"}],"cooldown":[{"name":"Band external rotation","prescription":"3×15 / side"},{"name":"Foam roller t-spine","prescription":"1–2 min"}]},"run_hilly_z2":{"title":"Run — hilly zone 2","duration":"45–60 min","notes":["Hilly local terrain, zone 2 (you can hold a conversation)","Add 4× ~20 s strides at the end if feeling fresh","Base-building, not interval day. Resist the urge to push pace."],"warmup":[],"exercises":[],"cooldown_ref":"post_run_mobility"},"strength_b":{"title":"Strength B — push / hinge / mobility-biased lower body","duration":"50–60 min","warmup":[{"name":"Foam roller t-spine","prescription":"2 min"},{"name":"Scap push-ups","prescription":"2×8"},{"name":"Prone Y-T-W","prescription":"2×8 each letter"}],"exercises":[{"name":"Push-up (decline close-grip)","prescription":"3 × 10–15","load":"bodyweight (regular if too hard)"},{"name":"Cossack squat","prescription":"3 × 6 / side","load":"bodyweight; wks 3–4 optional 10–15 lb DB goblet","tag":"mobility-insurance"},{"name":"ATG / Bulgarian split squat","prescription":"3 × 8 / side, slow eccentric, knee tracks past toe","load":"bodyweight; wks 3–4: 15 lb DBs","tag":"mobility-insurance"},{"name":"Single-leg RDL","prescription":"3 × 8 / side, full stretch at bottom","load":"20 lb (progress to 25 lb when 8/side feels strong)"},{"name":"DB floor press","prescription":"3 × 10, slow eccentric","load":"25 lb DBs each","note":"limits overhead ROM — safe substitute for bench/OHP"},{"name":"Tibialis raises","prescription":"2 × 20","load":"bodyweight (toes-up against wall)","tag":"mobility-insurance"},{"name":"Hollow body hold","prescription":"3 × 20 s","load":"bodyweight"}],"cooldown":[{"name":"Band external rotation","prescription":"3×15 / side"},{"name":"Deep squat hold","prescription":"2 min"}]},"mobility_or_rest":{"title":"Mobility only OR rest","duration":"20–30 min or off","notes":["Choose: full mobility block OR fully off if Tue/Thu left you cooked","If mobility: foam roller t-spine + full band shoulder series + hip mobility"],"warmup":[],"exercises":[],"cooldown_ref":"long_mobility_block"},"long_day":{"title":"Long day (alternates: Hike OR Climb #2)","duration":"90 min – 4 hr","notes":["Week A: Long hilly hike, 2–4 hr conversational. Light pack → progress to weighted (5/15/25 lb).","Week B: Home tension board 30–45 min, vertical to slight overhang ONLY (not 30°). Followed by 60–90 min easy bike or run.","Alternate weekly until 4 weeks symptom-free at this volume — then make Week B the default and the schedule becomes 2× climbing/wk."],"warmup":[],"exercises":[],"cooldown_ref":"post_run_mobility"},"rest":{"title":"Rest","duration":"—","notes":["Full rest day. Light walking is fine. No structured training."],"warmup":[],"exercises":[],"cooldown":[]}}}</script>
+  <script id="data-workouts" type="application/json">{"demo_links":{"Pull-ups":"https://www.youtube.com/results?search_query=strict+pull+up+tutorial","Bottom-up TGU":"https://www.youtube.com/watch?v=Z_YHkXGiieU","Single-leg row, balance":"https://www.youtube.com/watch?v=SF5cUMD5LYI","Bottom-up KB front carry @ 90°":"https://www.youtube.com/watch?v=UpBzi0HIdAI","Dead bug":"https://www.youtube.com/watch?v=bxn9FBrt4-A","Side plank":"https://www.youtube.com/watch?v=iNbH7_edNI8","Pallof press (band)":"https://www.youtube.com/watch?v=dBAmQ9bx3JA","Push-up (decline close-grip)":"https://www.youtube.com/watch?v=jssZppXpG4k","Cossack squat":"https://www.youtube.com/watch?v=tpczTeSkHz0","ATG / Bulgarian split squat":"https://www.youtube.com/watch?v=qfpkwZlG-cs","Single-leg RDL":"https://www.youtube.com/watch?v=Zfr6wizR8rs","DB floor press":"https://www.youtube.com/watch?v=AqYFvc9t_vU","Tibialis raises":"https://www.youtube.com/watch?v=O8ZcXfwFuqs","Hollow body hold":"https://www.youtube.com/watch?v=LlDNef_Ztsc","Cat-cow + thread the needle":"https://www.youtube.com/watch?v=OWebrsecy7g","World's greatest stretch":"https://www.youtube.com/watch?v=-CiWQ2IvY34","90/90 hip switches":"https://www.youtube.com/watch?v=HUZimFZJZWU","Couch stretch":"https://www.youtube.com/watch?v=nTJaGnjUkTY","Standing calf stretch":"https://www.youtube.com/watch?v=osYF1clbyMs","Pigeon stretch":"https://www.youtube.com/watch?v=Z3t7KrsvHI4","Pancake stretch":"https://www.youtube.com/watch?v=Zl1R9iGWt18","Frog stretch":"https://www.youtube.com/watch?v=hyTgVKeFU1k","Deep squat hold":"https://www.youtube.com/watch?v=YjjZnQpXB2U","Hip CARs":"https://www.youtube.com/watch?v=zbH4XmSREoc","Ankle dorsiflexion":"https://www.youtube.com/watch?v=u3NbKOXl75k","Foam roller t-spine":"https://www.youtube.com/results?search_query=foam+roller+t-spine+extension+tutorial","Foam roller":"https://www.youtube.com/results?search_query=foam+roller+legs+glutes+IT+band+tutorial","Active hamstring scoop":"https://www.youtube.com/results?search_query=active+hamstring+scoop+stretch+tutorial","Band pull-aparts":"https://www.youtube.com/watch?v=D-3bRfprMGI","Band external rotation":"https://www.youtube.com/watch?v=NMj88M5eu8A","Scap push-ups":"https://www.youtube.com/watch?v=LeMk15TN0No","Prone Y-T-W":"https://www.youtube.com/watch?v=SSy4XHJHIvw","ARC training":"https://www.youtube.com/@HoopersBeta"},"morning_mobility":{"title":"Daily morning mobility (5–7 min, before coffee)","items":[{"name":"Cat-cow + thread the needle","prescription":"8 each"},{"name":"World's greatest stretch","prescription":"5 each side"},{"name":"90/90 hip switches","prescription":"8 each side"},{"name":"Couch stretch","prescription":"60 s each side"}]},"post_run_mobility":{"title":"Post-run mobility (10 min, non-negotiable on long-run day)","items":[{"name":"Standing calf stretch","prescription":"60 s each, knee-straight + knee-bent"},{"name":"Active hamstring scoop","prescription":"10 each"},{"name":"Couch stretch","prescription":"90 s each side"},{"name":"Pigeon stretch","prescription":"60 s each side"},{"name":"Foam roller","prescription":"90 s per area: glutes, IT band, quads, calves"}]},"long_mobility_block":{"title":"Longer mobility block (15–20 min, twice/week — Friday + Sunday)","items":[{"name":"Pancake stretch","prescription":"active + passive"},{"name":"Frog stretch","prescription":"easy hold"},{"name":"Deep squat hold","prescription":"2 min"},{"name":"Hip CARs","prescription":"5 each direction each side"},{"name":"Ankle dorsiflexion","prescription":"10 each side, knee-to-wall"}]},"weekly_template":{"monday":{"session_id":"climb_quarry","label":"Climb #1 — Auburn Quarry rope solo"},"tuesday":{"session_id":"strength_a","label":"Strength A — pull / cuff / core"},"wednesday":{"session_id":"run_hilly_z2","label":"Run — hilly zone 2"},"thursday":{"session_id":"strength_b","label":"Strength B — push / hinge / cuff"},"friday":{"session_id":"mobility_or_rest","label":"Mobility only OR rest"},"saturday":{"session_id":"long_day","label":"Long day — see Saturday alternates"},"sunday":{"session_id":"rest","label":"Rest"}},"sessions":{"climb_quarry":{"title":"Climb #1 — Auburn Quarry rope solo","duration":"~60 min on rock + bike commute","notes":["Bike ride over IS your warm-up (zone 2)","10 min easy traversing / mobile-shoulder warm-up at the wall","Moderate intensity. Avoid max-effort cranking on left arm in compromised positions (deep underclings, gastons, full lock-offs)","Stop while you still have one good lap left — leaving reps on the table is the point right now","Cool-down bike ride; band ER + t-spine extension at home"],"warmup":[],"exercises":[],"cooldown":[{"name":"Band external rotation","prescription":"3×15 / side"},{"name":"Foam roller t-spine","prescription":"1–2 min"}]},"strength_a":{"title":"Strength A — pull / cuff / core","duration":"50–60 min","warmup":[{"name":"Foam roller t-spine","prescription":"2 min"},{"name":"Band pull-aparts","prescription":"2×15"},{"name":"Band external rotation","prescription":"2×15 / side"}],"exercises":[{"name":"Pull-ups","prescription":"3×8","load":"bodyweight; add a 3-sec lower when 3×8 feels easy"},{"name":"Bottom-up TGU","prescription":"3 / side","load":"17.5 lb; test 20 lb every 2 wk"},{"name":"Single-leg row, balance","prescription":"3×8 / side","load":"20 lb"},{"name":"Bottom-up KB front carry @ 90°","prescription":"2 × 30 m / side","load":"20 lb"},{"name":"Dead bug","prescription":"3×10","load":"bodyweight"},{"name":"Side plank","prescription":"3 × 30 s / side","load":"bodyweight"},{"name":"Pallof press (band)","prescription":"3×10 / side","load":"band"}],"cooldown":[{"name":"Band external rotation","prescription":"3×15 / side"},{"name":"Foam roller t-spine","prescription":"1–2 min"}]},"run_hilly_z2":{"title":"Run — hilly zone 2","duration":"45–60 min","notes":["Hilly local terrain, zone 2 (you can hold a conversation)","Add 4× ~20 s strides at the end if feeling fresh","Base-building, not interval day. Resist the urge to push pace."],"warmup":[],"exercises":[],"cooldown_ref":"post_run_mobility"},"strength_b":{"title":"Strength B — push / hinge / mobility-biased lower body","duration":"50–60 min","warmup":[{"name":"Foam roller t-spine","prescription":"2 min"},{"name":"Scap push-ups","prescription":"2×8"},{"name":"Prone Y-T-W","prescription":"2×8 each letter"}],"exercises":[{"name":"Push-up (decline close-grip)","prescription":"3 × 10–15","load":"bodyweight (regular if too hard)"},{"name":"Cossack squat","prescription":"3 × 6 / side","load":"bodyweight; wks 3–4 optional 10–15 lb DB goblet","tag":"mobility-insurance"},{"name":"ATG / Bulgarian split squat","prescription":"3 × 8 / side, slow eccentric, knee tracks past toe","load":"bodyweight; wks 3–4: 15 lb DBs","tag":"mobility-insurance"},{"name":"Single-leg RDL","prescription":"3 × 8 / side, full stretch at bottom","load":"20 lb (progress to 25 lb when 8/side feels strong)"},{"name":"DB floor press","prescription":"3 × 10, slow eccentric","load":"25 lb DBs each","note":"limits overhead ROM — safe substitute for bench/OHP"},{"name":"Tibialis raises","prescription":"2 × 20","load":"bodyweight (toes-up against wall)","tag":"mobility-insurance"},{"name":"Hollow body hold","prescription":"3 × 20 s","load":"bodyweight"}],"cooldown":[{"name":"Band external rotation","prescription":"3×15 / side"},{"name":"Deep squat hold","prescription":"2 min"}]},"mobility_or_rest":{"title":"Mobility only OR rest","duration":"20–30 min or off","notes":["Choose: full mobility block OR fully off if Tue/Thu left you cooked","If mobility: foam roller t-spine + full band shoulder series + hip mobility"],"warmup":[],"exercises":[],"cooldown_ref":"long_mobility_block"},"long_day":{"title":"Long day (alternates: Hike OR Climb #2)","duration":"90 min – 4 hr","notes":["Week A: Long hilly hike, 2–4 hr conversational. Light pack → progress to weighted (5/15/25 lb).","Week B: Home tension board 30–45 min, vertical to slight overhang ONLY (not 30°). Followed by 60–90 min easy bike or run.","Alternate weekly until 4 weeks symptom-free at this volume — then make Week B the default and the schedule becomes 2× climbing/wk."],"warmup":[],"exercises":[],"cooldown_ref":"post_run_mobility"},"rest":{"title":"Rest","duration":"—","notes":["Full rest day. Light walking is fine. No structured training."],"warmup":[],"exercises":[],"cooldown":[]}}}</script>
   <script id="data-state" type="application/json">{"$schema_version":1,"user":{"name":"Erik","start_date":"2026-04-28","phase":"1 — Base + shoulder","phase_window":"May → mid-July 2026"},"current_week_overrides":{},"log":[{"date":"2026-04-28","planned":"Strength A","did":"Strength A; tested TGU at 20 lb — too heavy, dropping back to 17.5","shoulder_during":"green","shoulder_post_24h":"green","sleep_side_tolerance":null,"notes":"Post-workout ~3/10 anterior + superior left shoulder — confirmed average / baseline (not a flare). 20 lb TGU test failed; hold at 17.5, retest in 2 weeks. AM next-day check: 0–1/10, much better.","processed_memos":["coach-20260428-2121.json","coach-20260429-0756.json"]},{"date":"2026-04-29","planned":"Run — hilly zone 2","did":"5.4 mi run in 50 min (≈9:15/mi pace)","shoulder_during":"green","shoulder_post_24h":null,"sleep_side_tolerance":null,"notes":"1/10 anterior shoulder burning during run, very mild.","processed_memos":["coach-20260429-1219.json"]}],"garmin":{"last_synced":"2026-04-29","recent_activities":[{"date":"2026-04-29","type":"Trail run","detail":"5.3 mi · 49:41 · avg HR 156","raw_type":"trail_running","elevation_gain_m":184.34000000357628,"training_load":174.64016723632812},{"date":"2026-04-21","type":"Trail run","detail":"4.4 mi · 42:13 · avg HR 150","raw_type":"trail_running","elevation_gain_m":185.5600000023842,"training_load":131.85662841796875},{"date":"2026-04-20","type":"Climb","detail":"59:56 · avg HR 123","raw_type":"indoor_climbing","elevation_gain_m":96.01999999955297,"training_load":49.852783203125},{"date":"2026-04-11","type":"Trail run","detail":"3.3 mi · 46:37 · avg HR 152","raw_type":"trail_running","elevation_gain_m":284.419999986887,"training_load":141.31690979003906},{"date":"2026-03-30","type":"Swim","detail":"0.9 mi · 35:27 · avg HR 130","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":45.35321044921875},{"date":"2026-03-24","type":"Swim","detail":"0.7 mi · 29:22 · avg HR 129","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":32.35809326171875},{"date":"2026-02-27","type":"Trail run","detail":"8.0 mi · 1:23:32 · avg HR 149","raw_type":"trail_running","elevation_gain_m":335.3600000143051,"training_load":221.98597717285156},{"date":"2026-02-26","type":"Swim","detail":"0.5 mi · 19:33 · avg HR 137","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":44.73719787597656},{"date":"2026-02-23","type":"Swim","detail":"0.5 mi · 17:30 · avg HR 146","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":59.75328063964844},{"date":"2026-02-21","type":"Run","detail":"3.2 mi · 28:02 · avg HR 161","raw_type":"running","elevation_gain_m":94.37000000476837,"training_load":171.4282684326172},{"date":"2026-02-18","type":"Swim","detail":"0.7 mi · 23:35 · avg HR 113","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":11.72869873046875},{"date":"2026-02-08","type":"Skate Skiing Ws","detail":"4.9 mi · 1:07:03 · avg HR 98","raw_type":"skate_skiing_ws","elevation_gain_m":35.87000000476837,"training_load":11.219192504882812},{"date":"2026-02-07","type":"Skate Skiing Ws","detail":"9.4 mi · 1:32:55 · avg HR 113","raw_type":"skate_skiing_ws","elevation_gain_m":397.9200000166893,"training_load":26.95928955078125},{"date":"2026-01-26","type":"Trail run","detail":"5.8 mi · 1:00:31 · avg HR 159","raw_type":"trail_running","elevation_gain_m":258.31999999284744,"training_load":221.59942626953125},{"date":"2026-01-16","type":"Skate Skiing Ws","detail":"4.8 mi · 45:53 · avg HR 114","raw_type":"skate_skiing_ws","elevation_gain_m":76.01999999955297,"training_load":21.51220703125},{"date":"2026-01-14","type":"Skate Skiing Ws","detail":"6.3 mi · 1:12:47 · avg HR 106","raw_type":"skate_skiing_ws","elevation_gain_m":127.55000001192093,"training_load":15.437393188476562},{"date":"2026-01-08","type":"Skate Skiing Ws","detail":"3.6 mi · 56:47 · avg HR 108","raw_type":"skate_skiing_ws","elevation_gain_m":118.81999999284744,"training_load":15.175552368164062},{"date":"2026-01-06","type":"Trail run","detail":"7.6 mi · 1:10:23 · avg HR 161","raw_type":"trail_running","elevation_gain_m":231.80000001192093,"training_load":235.33306884765625},{"date":"2025-12-10","type":"Trail run","detail":"6.0 mi · 1:13:10 · avg HR 145","raw_type":"trail_running","elevation_gain_m":281.2399999946356,"training_load":176.8174285888672},{"date":"2025-12-06","type":"Trail run","detail":"6.2 mi · 1:02:38 · avg HR 162","raw_type":"trail_running","elevation_gain_m":166.44999998807907,"training_load":243.63827514648438},{"date":"2025-11-10","type":"Trail run","detail":"6.1 mi · 56:54 · avg HR 151","raw_type":"trail_running","elevation_gain_m":221.23999999463558,"training_load":179.5175018310547},{"date":"2025-10-27","type":"Trail run","detail":"6.4 mi · 1:07:41 · avg HR 159","raw_type":"trail_running","elevation_gain_m":324.7099999785423,"training_load":179.09603881835938},{"date":"2025-10-14","type":"Hike","detail":"3.7 mi · 1:31:08 · avg HR 107","raw_type":"hiking","elevation_gain_m":210.46000000834465,"training_load":22.79754638671875},{"date":"2025-09-26","type":"Hike","detail":"7.6 mi · 2:16:15 · avg HR 151","raw_type":"hiking","elevation_gain_m":734.1299999952316,"training_load":331.9892578125},{"date":"2025-09-21","type":"Hike","detail":"0.2 mi · 9:39 · avg HR 93","raw_type":"hiking","elevation_gain_m":0,"training_load":2.2424163818359375},{"date":"2025-08-28","type":"Run","detail":"8.5 mi · 1:19:35 · avg HR 163","raw_type":"running","elevation_gain_m":268.55000001192093,"training_load":268.38873291015625},{"date":"2025-08-17","type":"Hike","detail":"14.8 mi · 7:26:42 · avg HR 114","raw_type":"hiking","elevation_gain_m":1141.4900000095367,"training_load":71.31935119628906},{"date":"2025-08-16","type":"Hike","detail":"21.5 mi · 9:48:03 · avg HR 124","raw_type":"hiking","elevation_gain_m":1780.3600000143051,"training_load":164.6258544921875},{"date":"2025-08-06","type":"Stair Climbing","detail":"27:33 · avg HR 160","raw_type":"stair_climbing","elevation_gain_m":null,"training_load":127.3319091796875},{"date":"2025-07-28","type":"Indoor Cardio","detail":"57:59 · avg HR 142","raw_type":"indoor_cardio","elevation_gain_m":null,"training_load":121.55618286132812},{"date":"2025-07-25","type":"Trail run","detail":"10.6 mi · 3:26:12 · avg HR 126","raw_type":"trail_running","elevation_gain_m":630.6299999952316,"training_load":77.00532531738281},{"date":"2025-07-17","type":"Run","detail":"3.8 mi · 35:03 · avg HR 139","raw_type":"running","elevation_gain_m":32.8299999833107,"training_load":79.37794494628906},{"date":"2025-07-11","type":"Trail run","detail":"4.7 mi · 45:15 · avg HR 147","raw_type":"trail_running","elevation_gain_m":37.889999985694885,"training_load":104.43949890136719},{"date":"2025-07-01","type":"Trail run","detail":"5.4 mi · 55:16 · avg HR 151","raw_type":"trail_running","elevation_gain_m":194.10999999940395,"training_load":141.68907165527344},{"date":"2025-06-27","type":"Climb","detail":"1:22:59 · avg HR 130","raw_type":"indoor_climbing","elevation_gain_m":156.30000001192093,"training_load":79.18772888183594},{"date":"2025-06-25","type":"Trail run","detail":"7.1 mi · 1:09:41 · avg HR 151","raw_type":"trail_running","elevation_gain_m":326.83999997377396,"training_load":236.82298278808594},{"date":"2025-06-20","type":"Hike","detail":"2.8 mi · 35:24 · avg HR 127","raw_type":"hiking","elevation_gain_m":153.25999999046326,"training_load":51.94975280761719},{"date":"2025-06-18","type":"Hike","detail":"14.0 mi · 14:24:17 · avg HR 122","raw_type":"hiking","elevation_gain_m":1684.1299999952316,"training_load":248.7333221435547},{"date":"2025-06-16","type":"Trail run","detail":"5.7 mi · 1:09:57 · avg HR 128","raw_type":"trail_running","elevation_gain_m":179.52999997138977,"training_load":72.21147155761719},{"date":"2025-06-05","type":"Trail run","detail":"4.7 mi · 48:35 · avg HR 150","raw_type":"trail_running","elevation_gain_m":203.47999998927116,"training_load":140.4325714111328},{"date":"2025-05-28","type":"Swim","detail":"1.0 mi · 38:19 · avg HR 133","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":51.5096435546875},{"date":"2025-05-23","type":"Run","detail":"3.5 mi · 33:40 · avg HR 141","raw_type":"running","elevation_gain_m":119.02999999932945,"training_load":86.13272094726562},{"date":"2025-05-19","type":"Swim","detail":"1.0 mi · 40:00 · avg HR 127","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":34.3333740234375},{"date":"2025-05-14","type":"Hike","detail":"4.7 mi · 2:55:20 · avg HR 94","raw_type":"hiking","elevation_gain_m":292.99000000953674,"training_load":17.071319580078125},{"date":"2025-05-04","type":"Trail run","detail":"3.6 mi · 30:41 · avg HR 153","raw_type":"trail_running","elevation_gain_m":34.28000000119209,"training_load":121.23458862304688},{"date":"2025-05-01","type":"Trail run","detail":"3.1 mi · 33:08 · avg HR 144","raw_type":"trail_running","elevation_gain_m":106.28999999165535,"training_load":78.72236633300781},{"date":"2025-04-23","type":"Swim","detail":"1.1 mi · 40:04 · avg HR 118","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":20.798568725585938},{"date":"2025-04-21","type":"Swim","detail":"1.1 mi · 41:02 · avg HR 127","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":34.12568664550781},{"date":"2025-04-16","type":"Swim","detail":"0.7 mi · 28:05 · avg HR 126","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":26.503128051757812},{"date":"2025-04-14","type":"Swim","detail":"1.5 mi · 1:02:32 · avg HR 123","raw_type":"lap_swimming","elevation_gain_m":null,"training_load":32.02729797363281}],"recent_sleep":[],"recent_resting_hr":[{"date":"2026-04-29","bpm":129},{"date":"2026-04-21","bpm":148},{"date":"2026-04-20","bpm":109}]},"open_questions":[]}</script>
 
   <script>
@@ -279,12 +358,14 @@
       ? ' <span class="tag mob">mobility-insurance</span>' : "";
     const load = ex.load ? '<div class="ex-load">' + esc(ex.load) + '</div>' : "";
     const note = ex.note ? '<div class="note">' + esc(ex.note) + '</div>' : "";
-    return '<li class="ex">' +
+    const pres = ex.prescription || "";
+    return '<li class="ex" data-prescription="' + esc(pres) + '">' +
       '<div class="ex-head">' +
         '<span class="ex-name">' + nameHtml + tag + '</span>' +
-        '<span class="ex-pres">' + esc(ex.prescription || "") + '</span>' +
+        '<span class="ex-pres">' + esc(pres) + '</span>' +
       '</div>' +
       load + note +
+      '<span class="timer-slot"></span>' +
     '</li>';
   }
 
@@ -319,6 +400,243 @@
 
   function logEntryFor(iso) {
     return (state.log || []).find(function (e) { return e.date === iso; }) || null;
+  }
+
+  // ---------- completion detection ----------
+  // Sources, in priority order:
+  //   1. log entry exists in state.json (canonical — written when Erik talks to Claude)
+  //   2. Garmin activity on this date matches the planned session type
+  //   3. localStorage manual mark (the "✓ Mark complete" button)
+  const SESSION_TO_GARMIN = {
+    run_hilly_z2: ["running", "trail_running"],
+    long_day: ["running", "trail_running", "hiking", "indoor_climbing", "rock_climbing", "sport_climbing"],
+    climb_quarry: ["indoor_climbing", "sport_climbing", "rock_climbing", "bouldering"]
+  };
+  function manualMap() {
+    try { return JSON.parse(localStorage.getItem("coach.manual_complete") || "{}"); }
+    catch (e) { return {}; }
+  }
+  function setManual(map) {
+    try { localStorage.setItem("coach.manual_complete", JSON.stringify(map)); } catch (e) {}
+  }
+  function findGarminMatch(iso, sessionId) {
+    const expected = SESSION_TO_GARMIN[sessionId];
+    if (!expected) return null;
+    const acts = (state.garmin && state.garmin.recent_activities) || [];
+    for (let i = 0; i < acts.length; i++) {
+      if (acts[i].date === iso && expected.indexOf(acts[i].raw_type) !== -1) return acts[i];
+    }
+    return null;
+  }
+  function completionFor(iso) {
+    const log = logEntryFor(iso);
+    if (log) return { done: true, source: "log" };
+    const planned = plannedSessionForDate(iso);
+    const m = findGarminMatch(iso, planned.session_id);
+    if (m) return { done: true, source: "garmin", activity: m };
+    const mm = manualMap();
+    if (mm[iso]) return { done: true, source: "manual", ts: mm[iso] };
+    return { done: false };
+  }
+
+  // ---------- prescription duration parser ----------
+  // Returns { phases: [{seconds, label}, ...] } or null if no time-based timer applies.
+  function parseDuration(pres) {
+    if (!pres) return null;
+    const sec = pres.match(/(\d+)\s*(?:s|sec|seconds?)\b/i);
+    const minRange = pres.match(/(\d+)\s*[–-]\s*(\d+)\s*min\b/i);
+    const min = pres.match(/(\d+)\s*min\b/i);
+    let baseSecs = null;
+    if (minRange) baseSecs = Math.round(((+minRange[1] + +minRange[2]) / 2) * 60);
+    else if (min) baseSecs = +min[1] * 60;
+    else if (sec) baseSecs = +sec[1];
+    if (baseSecs == null || baseSecs < 5) return null;
+
+    const perArea = pres.match(/per\s+area:\s*(.+)$/i);
+    if (perArea) {
+      const areas = perArea[1].split(/\s*,\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
+      if (areas.length >= 2) {
+        return { phases: areas.map(function (a) { return { seconds: baseSecs, label: a }; }) };
+      }
+    }
+    const ev = pres.match(/each[,\s]+([a-z][a-z\-]*)\s*\+\s*([a-z][a-z\-]*)/i);
+    if (ev) {
+      return { phases: [
+        { seconds: baseSecs, label: ev[1] },
+        { seconds: baseSecs, label: ev[2] }
+      ]};
+    }
+    if (/each\s+side/i.test(pres)) {
+      return { phases: [
+        { seconds: baseSecs, label: "left" },
+        { seconds: baseSecs, label: "right" }
+      ]};
+    }
+    return { phases: [{ seconds: baseSecs, label: "" }] };
+  }
+  function timerSummary(timer) {
+    const ea = timer.phases[0].seconds;
+    const eaText = ea < 60 ? ea + "s" : (ea % 60 === 0 ? (ea / 60) + "m" : (Math.round(ea / 6) / 10) + "m");
+    return timer.phases.length > 1 ? eaText + " × " + timer.phases.length : eaText;
+  }
+  function fmtClock(s) {
+    s = Math.max(0, Math.ceil(s));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+  function decorateTimers(root) {
+    const slots = root.querySelectorAll(".ex[data-prescription] .timer-slot");
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      if (slot.firstChild) continue;
+      const li = slot.closest(".ex");
+      const t = parseDuration(li.dataset.prescription);
+      if (!t) continue;
+      const btn = document.createElement("button");
+      btn.className = "timer-btn";
+      btn.textContent = "▶ " + timerSummary(t);
+      btn.setAttribute("aria-label", "Start " + timerSummary(t) + " timer");
+      btn._timer = t;
+      btn._summary = timerSummary(t);
+      slot.appendChild(btn);
+    }
+  }
+
+  // ---------- timer controller (one active timer at a time) ----------
+  let active = null;
+  function beep(double) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      function tone(freq, t0, dur) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(t0);
+        o.stop(t0 + dur + 0.05);
+      }
+      const t0 = ctx.currentTime;
+      tone(880, t0, 0.18);
+      if (double) tone(1175, t0 + 0.22, 0.22);
+      setTimeout(function () { try { ctx.close(); } catch (e) {} }, 1200);
+    } catch (e) {}
+    if (navigator.vibrate) try { navigator.vibrate(double ? [80, 60, 80] : [60]); } catch (e) {}
+  }
+  function teardownTimerUI(li) {
+    const slot = li.querySelector(".timer-slot"); if (!slot) return;
+    ["timer-cancel", "timer-phase", "timer-bar"].forEach(function (c) {
+      const e = slot.querySelector("." + c);
+      if (e) e.remove();
+    });
+  }
+  function ensureTimerUI(li, btn) {
+    const slot = li.querySelector(".timer-slot");
+    let cancel = slot.querySelector(".timer-cancel");
+    if (!cancel) {
+      cancel = document.createElement("button");
+      cancel.className = "timer-cancel";
+      cancel.textContent = "✕";
+      cancel.setAttribute("aria-label", "Cancel timer");
+      cancel.addEventListener("click", function (e) { e.stopPropagation(); stopActiveTimer(false); });
+      btn.insertAdjacentElement("afterend", cancel);
+    }
+    let phase = slot.querySelector(".timer-phase");
+    if (!phase) {
+      phase = document.createElement("div");
+      phase.className = "timer-phase";
+      slot.appendChild(phase);
+    }
+    let bar = slot.querySelector(".timer-bar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "timer-bar";
+      const fill = document.createElement("div");
+      fill.className = "timer-fill";
+      bar.appendChild(fill);
+      slot.appendChild(bar);
+    }
+    return { phase: phase, fill: bar.querySelector(".timer-fill") };
+  }
+  function phaseLabel(p, idx, total) {
+    const counter = total > 1 ? "(" + (idx + 1) + "/" + total + ") " : "";
+    return counter + (p.label || "hold");
+  }
+  function stopActiveTimer(beepDone) {
+    if (!active) return;
+    if (active.raf) cancelAnimationFrame(active.raf);
+    active.btn.classList.remove("running", "paused");
+    active.btn.textContent = "▶ " + active.summary;
+    teardownTimerUI(active.li);
+    if (active.wakeLock) try { active.wakeLock.release(); } catch (e) {}
+    if (beepDone) beep(true);
+    active = null;
+  }
+  async function startTimer(btn) {
+    if (active && active.btn === btn) {
+      if (active.paused) {
+        active.startedAt = Date.now() - active.elapsedAtPause;
+        active.paused = false;
+        active.btn.classList.remove("paused");
+        tickActive();
+      } else {
+        active.elapsedAtPause = Date.now() - active.startedAt;
+        active.paused = true;
+        if (active.raf) cancelAnimationFrame(active.raf);
+        active.btn.classList.add("paused");
+      }
+      return;
+    }
+    if (active) stopActiveTimer(false);
+    const timer = btn._timer || parseDuration(btn.closest(".ex").dataset.prescription);
+    if (!timer) return;
+    const li = btn.closest(".ex");
+    const ui = ensureTimerUI(li, btn);
+    let wakeLock = null;
+    try {
+      if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
+    } catch (e) {}
+    active = {
+      btn: btn, li: li, phases: timer.phases, currentIdx: 0,
+      startedAt: Date.now(), elapsedAtPause: 0, paused: false,
+      summary: btn._summary || timerSummary(timer),
+      wakeLock: wakeLock, ui: ui
+    };
+    btn.classList.add("running");
+    ui.phase.textContent = phaseLabel(timer.phases[0], 0, timer.phases.length);
+    ui.fill.style.width = "0%";
+    btn.textContent = fmtClock(timer.phases[0].seconds);
+    tickActive();
+  }
+  function tickActive() {
+    if (!active || active.paused) return;
+    const now = Date.now();
+    const phase = active.phases[active.currentIdx];
+    const elapsed = (now - active.startedAt) / 1000;
+    const remaining = phase.seconds - elapsed;
+    if (remaining <= 0) {
+      active.currentIdx++;
+      if (active.currentIdx >= active.phases.length) {
+        stopActiveTimer(true);
+        return;
+      }
+      beep(false);
+      active.startedAt = now;
+      const next = active.phases[active.currentIdx];
+      active.ui.phase.textContent = phaseLabel(next, active.currentIdx, active.phases.length);
+      active.ui.fill.style.width = "0%";
+      active.btn.textContent = fmtClock(next.seconds);
+      active.raf = requestAnimationFrame(tickActive);
+      return;
+    }
+    active.btn.textContent = fmtClock(remaining);
+    active.ui.fill.style.width = (((phase.seconds - remaining) / phase.seconds) * 100).toFixed(1) + "%";
+    active.raf = requestAnimationFrame(tickActive);
   }
 
   function sessionHTML(session) {
@@ -359,13 +677,46 @@
     const planned = plannedSessionForDate(iso);
     const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
     const log = logEntryFor(iso);
+    const comp = completionFor(iso);
+
+    let footer;
+    if (log) {
+      footer = loggedSummary(log);
+    } else if (comp.done && comp.source === "garmin") {
+      const a = comp.activity;
+      footer =
+        '<div class="complete-banner">' +
+          '<span class="check">✓</span>' +
+          '<div class="complete-text">' +
+            '<strong>Done · auto-detected</strong>' +
+            '<span>' + esc(a.type) + ' · ' + esc(a.detail) + ' · via Garmin</span>' +
+          '</div>' +
+        '</div>' +
+        '<p class="dim small">Tell Claude how it went (shoulder color, notes) and the full log will be saved.</p>';
+    } else if (comp.done && comp.source === "manual") {
+      const t = new Date(comp.ts);
+      const tStr = t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      footer =
+        '<div class="complete-banner">' +
+          '<span class="check">✓</span>' +
+          '<div class="complete-text"><strong>Marked done</strong><span>at ' + esc(tStr) + '</span></div>' +
+          '<button class="complete-undo" data-action="undo-complete">undo</button>' +
+        '</div>' +
+        '<p class="dim small">Tell Claude how it went and the full log will be saved.</p>';
+    } else {
+      footer =
+        '<button class="complete-btn" data-action="mark-complete">✓ Mark complete</button>' +
+        '<p class="dim small">Or tell Claude how it went and the full log will be saved.</p>';
+    }
+
+    const checkBadge = comp.done ? ' <span class="check-badge" title="completed">✓</span>' : '';
     return '<section class="card today">' +
       '<header>' +
         '<div class="kicker">Today · ' + esc(fmtFull(iso)) + '</div>' +
-        '<h2>' + esc(sessionDef.title) + '</h2>' +
+        '<h2>' + esc(sessionDef.title) + checkBadge + '</h2>' +
       '</header>' +
       sessionHTML(planned) +
-      (log ? loggedSummary(log) : '<p class="dim">Not logged yet. Tell Claude how it went when you\'re done.</p>') +
+      footer +
     '</section>';
   }
 
@@ -379,9 +730,11 @@
       const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
       const log = logEntryFor(iso);
       const isToday = iso === today;
+      const comp = completionFor(iso);
+      const cls = ((isToday ? "today " : "") + (comp.done ? "done" : "")).trim();
       days.push(
-        '<li class="' + (isToday ? "today" : "") + '">' +
-          '<div class="weekday">' + esc(dayName(iso).slice(0,3).toUpperCase()) + '</div>' +
+        '<li class="' + cls + '">' +
+          '<div class="weekday">' + esc(dayName(iso).slice(0,3).toUpperCase()) + (comp.done ? '<span class="weekcheck">✓</span>' : '') + '</div>' +
           '<div class="weekdate">' + esc(iso.slice(5)) + '</div>' +
           '<div class="weeklabel">' + esc(sessionDef.title) + '</div>' +
           '<div class="weekstatus">' + statusDot(log && log.shoulder_during) + statusDot(log && log.shoulder_post_24h) + '</div>' +
@@ -400,8 +753,9 @@
     for (let i = N - 1; i >= 0; i--) {
       const iso = addDays(today, -i);
       const log = logEntryFor(iso);
+      const comp = completionFor(iso);
       cells.push(
-        '<div class="streakcell" title="' + esc(iso) + '">' +
+        '<div class="streakcell ' + (comp.done ? "done" : "") + '" title="' + esc(iso) + (comp.done ? " · done" : "") + '">' +
           '<div class="streakdate">' + esc(iso.slice(8)) + '</div>' +
           '<div class="streakdots">' + statusDot(log && log.shoulder_during) + statusDot(log && log.shoulder_post_24h) + '</div>' +
         '</div>'
@@ -425,6 +779,7 @@
     document.getElementById("today-panel").innerHTML = todayPanel();
     document.getElementById("week-panel").innerHTML = weekPanel();
     document.getElementById("streak-panel").innerHTML = streakPanel();
+    decorateTimers(document.body);
     lastDay = todayISO();
   }
   renderDynamic();
@@ -436,7 +791,40 @@
 
   // ...and when the PWA comes back to the foreground after being backgrounded.
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && todayISO() !== lastDay) renderDynamic();
+    if (document.visibilityState === "visible") {
+      if (todayISO() !== lastDay) renderDynamic();
+      // re-pump the active timer so the UI catches up after the tab was hidden
+      if (active && !active.paused) {
+        if (active.raf) cancelAnimationFrame(active.raf);
+        tickActive();
+      }
+    }
+  });
+
+  // Click delegation for timer-btn taps and mark-complete / undo buttons.
+  document.addEventListener("click", function (e) {
+    const tBtn = e.target.closest(".timer-btn");
+    if (tBtn) {
+      e.preventDefault();
+      startTimer(tBtn);
+      return;
+    }
+    const action = e.target.closest("[data-action]");
+    if (!action) return;
+    const a = action.dataset.action;
+    if (a === "mark-complete") {
+      const iso = todayISO();
+      const m = manualMap();
+      m[iso] = Date.now();
+      setManual(m);
+      renderDynamic();
+    } else if (a === "undo-complete") {
+      const iso = todayISO();
+      const m = manualMap();
+      delete m[iso];
+      setManual(m);
+      renderDynamic();
+    }
   });
 })();
   </script>

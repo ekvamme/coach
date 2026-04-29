@@ -44,14 +44,16 @@ function exerciseRow(ex) {
   const tag = ex.tag === "mobility-insurance"
     ? ` <span class="tag mob">mobility-insurance</span>` : "";
   const note = ex.note ? `<div class="note">${esc(ex.note)}</div>` : "";
+  const pres = ex.prescription || "";
   return `
-    <li class="ex">
+    <li class="ex" data-prescription="${esc(pres)}">
       <div class="ex-head">
         <span class="ex-name">${nameHtml}${tag}</span>
-        <span class="ex-pres">${esc(ex.prescription || "")}</span>
+        <span class="ex-pres">${esc(pres)}</span>
       </div>
       ${ex.load ? `<div class="ex-load">${esc(ex.load)}</div>` : ""}
       ${note}
+      <span class="timer-slot"></span>
     </li>`;
 }
 
@@ -182,12 +184,14 @@ function clientRenderer() {
       ? ' <span class="tag mob">mobility-insurance</span>' : "";
     const load = ex.load ? '<div class="ex-load">' + esc(ex.load) + '</div>' : "";
     const note = ex.note ? '<div class="note">' + esc(ex.note) + '</div>' : "";
-    return '<li class="ex">' +
+    const pres = ex.prescription || "";
+    return '<li class="ex" data-prescription="' + esc(pres) + '">' +
       '<div class="ex-head">' +
         '<span class="ex-name">' + nameHtml + tag + '</span>' +
-        '<span class="ex-pres">' + esc(ex.prescription || "") + '</span>' +
+        '<span class="ex-pres">' + esc(pres) + '</span>' +
       '</div>' +
       load + note +
+      '<span class="timer-slot"></span>' +
     '</li>';
   }
 
@@ -222,6 +226,243 @@ function clientRenderer() {
 
   function logEntryFor(iso) {
     return (state.log || []).find(function (e) { return e.date === iso; }) || null;
+  }
+
+  // ---------- completion detection ----------
+  // Sources, in priority order:
+  //   1. log entry exists in state.json (canonical — written when Erik talks to Claude)
+  //   2. Garmin activity on this date matches the planned session type
+  //   3. localStorage manual mark (the "✓ Mark complete" button)
+  const SESSION_TO_GARMIN = {
+    run_hilly_z2: ["running", "trail_running"],
+    long_day: ["running", "trail_running", "hiking", "indoor_climbing", "rock_climbing", "sport_climbing"],
+    climb_quarry: ["indoor_climbing", "sport_climbing", "rock_climbing", "bouldering"]
+  };
+  function manualMap() {
+    try { return JSON.parse(localStorage.getItem("coach.manual_complete") || "{}"); }
+    catch (e) { return {}; }
+  }
+  function setManual(map) {
+    try { localStorage.setItem("coach.manual_complete", JSON.stringify(map)); } catch (e) {}
+  }
+  function findGarminMatch(iso, sessionId) {
+    const expected = SESSION_TO_GARMIN[sessionId];
+    if (!expected) return null;
+    const acts = (state.garmin && state.garmin.recent_activities) || [];
+    for (let i = 0; i < acts.length; i++) {
+      if (acts[i].date === iso && expected.indexOf(acts[i].raw_type) !== -1) return acts[i];
+    }
+    return null;
+  }
+  function completionFor(iso) {
+    const log = logEntryFor(iso);
+    if (log) return { done: true, source: "log" };
+    const planned = plannedSessionForDate(iso);
+    const m = findGarminMatch(iso, planned.session_id);
+    if (m) return { done: true, source: "garmin", activity: m };
+    const mm = manualMap();
+    if (mm[iso]) return { done: true, source: "manual", ts: mm[iso] };
+    return { done: false };
+  }
+
+  // ---------- prescription duration parser ----------
+  // Returns { phases: [{seconds, label}, ...] } or null if no time-based timer applies.
+  function parseDuration(pres) {
+    if (!pres) return null;
+    const sec = pres.match(/(\d+)\s*(?:s|sec|seconds?)\b/i);
+    const minRange = pres.match(/(\d+)\s*[–-]\s*(\d+)\s*min\b/i);
+    const min = pres.match(/(\d+)\s*min\b/i);
+    let baseSecs = null;
+    if (minRange) baseSecs = Math.round(((+minRange[1] + +minRange[2]) / 2) * 60);
+    else if (min) baseSecs = +min[1] * 60;
+    else if (sec) baseSecs = +sec[1];
+    if (baseSecs == null || baseSecs < 5) return null;
+
+    const perArea = pres.match(/per\s+area:\s*(.+)$/i);
+    if (perArea) {
+      const areas = perArea[1].split(/\s*,\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
+      if (areas.length >= 2) {
+        return { phases: areas.map(function (a) { return { seconds: baseSecs, label: a }; }) };
+      }
+    }
+    const ev = pres.match(/each[,\s]+([a-z][a-z\-]*)\s*\+\s*([a-z][a-z\-]*)/i);
+    if (ev) {
+      return { phases: [
+        { seconds: baseSecs, label: ev[1] },
+        { seconds: baseSecs, label: ev[2] }
+      ]};
+    }
+    if (/each\s+side/i.test(pres)) {
+      return { phases: [
+        { seconds: baseSecs, label: "left" },
+        { seconds: baseSecs, label: "right" }
+      ]};
+    }
+    return { phases: [{ seconds: baseSecs, label: "" }] };
+  }
+  function timerSummary(timer) {
+    const ea = timer.phases[0].seconds;
+    const eaText = ea < 60 ? ea + "s" : (ea % 60 === 0 ? (ea / 60) + "m" : (Math.round(ea / 6) / 10) + "m");
+    return timer.phases.length > 1 ? eaText + " × " + timer.phases.length : eaText;
+  }
+  function fmtClock(s) {
+    s = Math.max(0, Math.ceil(s));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+  function decorateTimers(root) {
+    const slots = root.querySelectorAll(".ex[data-prescription] .timer-slot");
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      if (slot.firstChild) continue;
+      const li = slot.closest(".ex");
+      const t = parseDuration(li.dataset.prescription);
+      if (!t) continue;
+      const btn = document.createElement("button");
+      btn.className = "timer-btn";
+      btn.textContent = "▶ " + timerSummary(t);
+      btn.setAttribute("aria-label", "Start " + timerSummary(t) + " timer");
+      btn._timer = t;
+      btn._summary = timerSummary(t);
+      slot.appendChild(btn);
+    }
+  }
+
+  // ---------- timer controller (one active timer at a time) ----------
+  let active = null;
+  function beep(double) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      function tone(freq, t0, dur) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(t0);
+        o.stop(t0 + dur + 0.05);
+      }
+      const t0 = ctx.currentTime;
+      tone(880, t0, 0.18);
+      if (double) tone(1175, t0 + 0.22, 0.22);
+      setTimeout(function () { try { ctx.close(); } catch (e) {} }, 1200);
+    } catch (e) {}
+    if (navigator.vibrate) try { navigator.vibrate(double ? [80, 60, 80] : [60]); } catch (e) {}
+  }
+  function teardownTimerUI(li) {
+    const slot = li.querySelector(".timer-slot"); if (!slot) return;
+    ["timer-cancel", "timer-phase", "timer-bar"].forEach(function (c) {
+      const e = slot.querySelector("." + c);
+      if (e) e.remove();
+    });
+  }
+  function ensureTimerUI(li, btn) {
+    const slot = li.querySelector(".timer-slot");
+    let cancel = slot.querySelector(".timer-cancel");
+    if (!cancel) {
+      cancel = document.createElement("button");
+      cancel.className = "timer-cancel";
+      cancel.textContent = "✕";
+      cancel.setAttribute("aria-label", "Cancel timer");
+      cancel.addEventListener("click", function (e) { e.stopPropagation(); stopActiveTimer(false); });
+      btn.insertAdjacentElement("afterend", cancel);
+    }
+    let phase = slot.querySelector(".timer-phase");
+    if (!phase) {
+      phase = document.createElement("div");
+      phase.className = "timer-phase";
+      slot.appendChild(phase);
+    }
+    let bar = slot.querySelector(".timer-bar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "timer-bar";
+      const fill = document.createElement("div");
+      fill.className = "timer-fill";
+      bar.appendChild(fill);
+      slot.appendChild(bar);
+    }
+    return { phase: phase, fill: bar.querySelector(".timer-fill") };
+  }
+  function phaseLabel(p, idx, total) {
+    const counter = total > 1 ? "(" + (idx + 1) + "/" + total + ") " : "";
+    return counter + (p.label || "hold");
+  }
+  function stopActiveTimer(beepDone) {
+    if (!active) return;
+    if (active.raf) cancelAnimationFrame(active.raf);
+    active.btn.classList.remove("running", "paused");
+    active.btn.textContent = "▶ " + active.summary;
+    teardownTimerUI(active.li);
+    if (active.wakeLock) try { active.wakeLock.release(); } catch (e) {}
+    if (beepDone) beep(true);
+    active = null;
+  }
+  async function startTimer(btn) {
+    if (active && active.btn === btn) {
+      if (active.paused) {
+        active.startedAt = Date.now() - active.elapsedAtPause;
+        active.paused = false;
+        active.btn.classList.remove("paused");
+        tickActive();
+      } else {
+        active.elapsedAtPause = Date.now() - active.startedAt;
+        active.paused = true;
+        if (active.raf) cancelAnimationFrame(active.raf);
+        active.btn.classList.add("paused");
+      }
+      return;
+    }
+    if (active) stopActiveTimer(false);
+    const timer = btn._timer || parseDuration(btn.closest(".ex").dataset.prescription);
+    if (!timer) return;
+    const li = btn.closest(".ex");
+    const ui = ensureTimerUI(li, btn);
+    let wakeLock = null;
+    try {
+      if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
+    } catch (e) {}
+    active = {
+      btn: btn, li: li, phases: timer.phases, currentIdx: 0,
+      startedAt: Date.now(), elapsedAtPause: 0, paused: false,
+      summary: btn._summary || timerSummary(timer),
+      wakeLock: wakeLock, ui: ui
+    };
+    btn.classList.add("running");
+    ui.phase.textContent = phaseLabel(timer.phases[0], 0, timer.phases.length);
+    ui.fill.style.width = "0%";
+    btn.textContent = fmtClock(timer.phases[0].seconds);
+    tickActive();
+  }
+  function tickActive() {
+    if (!active || active.paused) return;
+    const now = Date.now();
+    const phase = active.phases[active.currentIdx];
+    const elapsed = (now - active.startedAt) / 1000;
+    const remaining = phase.seconds - elapsed;
+    if (remaining <= 0) {
+      active.currentIdx++;
+      if (active.currentIdx >= active.phases.length) {
+        stopActiveTimer(true);
+        return;
+      }
+      beep(false);
+      active.startedAt = now;
+      const next = active.phases[active.currentIdx];
+      active.ui.phase.textContent = phaseLabel(next, active.currentIdx, active.phases.length);
+      active.ui.fill.style.width = "0%";
+      active.btn.textContent = fmtClock(next.seconds);
+      active.raf = requestAnimationFrame(tickActive);
+      return;
+    }
+    active.btn.textContent = fmtClock(remaining);
+    active.ui.fill.style.width = (((phase.seconds - remaining) / phase.seconds) * 100).toFixed(1) + "%";
+    active.raf = requestAnimationFrame(tickActive);
   }
 
   function sessionHTML(session) {
@@ -262,13 +503,46 @@ function clientRenderer() {
     const planned = plannedSessionForDate(iso);
     const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
     const log = logEntryFor(iso);
+    const comp = completionFor(iso);
+
+    let footer;
+    if (log) {
+      footer = loggedSummary(log);
+    } else if (comp.done && comp.source === "garmin") {
+      const a = comp.activity;
+      footer =
+        '<div class="complete-banner">' +
+          '<span class="check">✓</span>' +
+          '<div class="complete-text">' +
+            '<strong>Done · auto-detected</strong>' +
+            '<span>' + esc(a.type) + ' · ' + esc(a.detail) + ' · via Garmin</span>' +
+          '</div>' +
+        '</div>' +
+        '<p class="dim small">Tell Claude how it went (shoulder color, notes) and the full log will be saved.</p>';
+    } else if (comp.done && comp.source === "manual") {
+      const t = new Date(comp.ts);
+      const tStr = t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      footer =
+        '<div class="complete-banner">' +
+          '<span class="check">✓</span>' +
+          '<div class="complete-text"><strong>Marked done</strong><span>at ' + esc(tStr) + '</span></div>' +
+          '<button class="complete-undo" data-action="undo-complete">undo</button>' +
+        '</div>' +
+        '<p class="dim small">Tell Claude how it went and the full log will be saved.</p>';
+    } else {
+      footer =
+        '<button class="complete-btn" data-action="mark-complete">✓ Mark complete</button>' +
+        '<p class="dim small">Or tell Claude how it went and the full log will be saved.</p>';
+    }
+
+    const checkBadge = comp.done ? ' <span class="check-badge" title="completed">✓</span>' : '';
     return '<section class="card today">' +
       '<header>' +
         '<div class="kicker">Today · ' + esc(fmtFull(iso)) + '</div>' +
-        '<h2>' + esc(sessionDef.title) + '</h2>' +
+        '<h2>' + esc(sessionDef.title) + checkBadge + '</h2>' +
       '</header>' +
       sessionHTML(planned) +
-      (log ? loggedSummary(log) : '<p class="dim">Not logged yet. Tell Claude how it went when you\'re done.</p>') +
+      footer +
     '</section>';
   }
 
@@ -282,9 +556,11 @@ function clientRenderer() {
       const sessionDef = workouts.sessions[planned.session_id] || workouts.sessions.rest;
       const log = logEntryFor(iso);
       const isToday = iso === today;
+      const comp = completionFor(iso);
+      const cls = ((isToday ? "today " : "") + (comp.done ? "done" : "")).trim();
       days.push(
-        '<li class="' + (isToday ? "today" : "") + '">' +
-          '<div class="weekday">' + esc(dayName(iso).slice(0,3).toUpperCase()) + '</div>' +
+        '<li class="' + cls + '">' +
+          '<div class="weekday">' + esc(dayName(iso).slice(0,3).toUpperCase()) + (comp.done ? '<span class="weekcheck">✓</span>' : '') + '</div>' +
           '<div class="weekdate">' + esc(iso.slice(5)) + '</div>' +
           '<div class="weeklabel">' + esc(sessionDef.title) + '</div>' +
           '<div class="weekstatus">' + statusDot(log && log.shoulder_during) + statusDot(log && log.shoulder_post_24h) + '</div>' +
@@ -303,8 +579,9 @@ function clientRenderer() {
     for (let i = N - 1; i >= 0; i--) {
       const iso = addDays(today, -i);
       const log = logEntryFor(iso);
+      const comp = completionFor(iso);
       cells.push(
-        '<div class="streakcell" title="' + esc(iso) + '">' +
+        '<div class="streakcell ' + (comp.done ? "done" : "") + '" title="' + esc(iso) + (comp.done ? " · done" : "") + '">' +
           '<div class="streakdate">' + esc(iso.slice(8)) + '</div>' +
           '<div class="streakdots">' + statusDot(log && log.shoulder_during) + statusDot(log && log.shoulder_post_24h) + '</div>' +
         '</div>'
@@ -328,6 +605,7 @@ function clientRenderer() {
     document.getElementById("today-panel").innerHTML = todayPanel();
     document.getElementById("week-panel").innerHTML = weekPanel();
     document.getElementById("streak-panel").innerHTML = streakPanel();
+    decorateTimers(document.body);
     lastDay = todayISO();
   }
   renderDynamic();
@@ -339,7 +617,40 @@ function clientRenderer() {
 
   // ...and when the PWA comes back to the foreground after being backgrounded.
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && todayISO() !== lastDay) renderDynamic();
+    if (document.visibilityState === "visible") {
+      if (todayISO() !== lastDay) renderDynamic();
+      // re-pump the active timer so the UI catches up after the tab was hidden
+      if (active && !active.paused) {
+        if (active.raf) cancelAnimationFrame(active.raf);
+        tickActive();
+      }
+    }
+  });
+
+  // Click delegation for timer-btn taps and mark-complete / undo buttons.
+  document.addEventListener("click", function (e) {
+    const tBtn = e.target.closest(".timer-btn");
+    if (tBtn) {
+      e.preventDefault();
+      startTimer(tBtn);
+      return;
+    }
+    const action = e.target.closest("[data-action]");
+    if (!action) return;
+    const a = action.dataset.action;
+    if (a === "mark-complete") {
+      const iso = todayISO();
+      const m = manualMap();
+      m[iso] = Date.now();
+      setManual(m);
+      renderDynamic();
+    } else if (a === "undo-complete") {
+      const iso = todayISO();
+      const m = manualMap();
+      delete m[iso];
+      setManual(m);
+      renderDynamic();
+    }
   });
 }
 
@@ -457,6 +768,81 @@ const html = `<!doctype html>
   .qm-btn.share { color: var(--accent); border-color: var(--accent); }
   .qm-btn.del { color: var(--red); border-color: var(--line); }
   .qm-btn:active { opacity: 0.6; }
+  .timer-slot { display: block; margin-top: 8px; }
+  .timer-slot:empty { display: none; }
+  .timer-slot:has(.timer-btn:only-child) { margin-top: 6px; }
+  .timer-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .timer-btn:active { opacity: 0.6; }
+  .timer-btn.running { background: var(--accent); color: #0a0d12; border-color: var(--accent); font-weight: 600; }
+  .timer-btn.paused { background: transparent; color: var(--accent); border-color: var(--accent); opacity: 0.7; }
+  .timer-cancel {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--dim);
+    border-radius: 14px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 6px;
+    font-family: inherit;
+  }
+  .timer-cancel:active { opacity: 0.6; }
+  .timer-phase { font-size: 11px; color: var(--accent); font-style: italic; margin-top: 6px; }
+  .timer-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .timer-fill { height: 100%; background: var(--accent); width: 0%; }
+  .complete-btn {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+  }
+  .complete-btn:active { opacity: 0.7; }
+  .complete-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    margin-top: 14px;
+  }
+  .complete-banner .check { color: var(--green); font-weight: 700; font-size: 18px; flex-shrink: 0; }
+  .complete-banner .complete-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .complete-banner .complete-text strong { color: var(--green); font-size: 14px; }
+  .complete-banner .complete-text span { color: var(--dim); font-size: 12px; }
+  .complete-undo {
+    background: transparent;
+    border: 0;
+    color: var(--dim);
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: inherit;
+    padding: 4px 6px;
+  }
+  .check-badge { color: var(--green); font-size: 16px; margin-left: 6px; vertical-align: middle; }
+  .weekcheck { color: var(--green); font-size: 11px; margin-left: 3px; font-weight: 700; }
+  .weekgrid li.done { border-color: var(--green); }
+  .streakcell.done { border-color: var(--green); background: rgba(74, 222, 128, 0.08); }
 </style>
 </head>
 <body>
