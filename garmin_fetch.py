@@ -39,7 +39,11 @@ if "prompt_mfa" not in inspect.signature(Garmin.__init__).parameters:
 
 ROOT = Path(__file__).parent
 STATE_PATH = ROOT / "state.json"
+HISTORY_PATH = ROOT / "garmin_history.jsonl"
 TOKEN_DIR = Path.home() / ".garminconnect"
+
+# state.json caches a rolling window for the page; the JSONL grows forever for analytics.
+DISPLAY_WINDOW_DAYS = 14
 
 ACTIVITY_TYPE_MAP = {
     "running": "Run",
@@ -126,6 +130,8 @@ def short_type(activity):
 
 
 def fetch_activities(client, days):
+    """Returns (display_dicts, raw_dicts). Display is the slim version for state.json;
+    raw is what Garmin returned (full field set), used for the history JSONL."""
     end = date.today()
     start = end - timedelta(days=days)
     raw = client.get_activities_by_date(start.isoformat(), end.isoformat()) or []
@@ -149,7 +155,29 @@ def fetch_activities(client, days):
             "training_load": a.get("activityTrainingLoad"),
         })
     out.sort(key=lambda x: x["date"], reverse=True)
-    return out
+    return out, raw
+
+
+def append_history(raw_activities, path):
+    """Append any activities not yet in the JSONL, deduped by activityId."""
+    seen = set()
+    if path.exists():
+        with open(path) as f:
+            for line in f:
+                try:
+                    seen.add(json.loads(line)["activityId"])
+                except (json.JSONDecodeError, KeyError):
+                    pass
+    added = 0
+    with open(path, "a") as f:
+        for a in raw_activities:
+            aid = a.get("activityId")
+            if aid is None or aid in seen:
+                continue
+            f.write(json.dumps(a) + "\n")
+            seen.add(aid)
+            added += 1
+    return added
 
 
 def fetch_sleep(client, days):
@@ -206,18 +234,28 @@ def main():
     load_dotenv()
     client = get_client(no_login=args.no_login)
 
-    print(f"Pulling last {args.days} days from Garmin Connect...")
-    activities = fetch_activities(client, args.days)
+    # Activities: --days controls how far back we look (allows backfill); the
+    # JSONL grows forever. Sleep/RHR don't have a history file yet so we only
+    # fetch the display window — keeps backfill runs fast.
+    print(f"Pulling last {args.days} days of activities from Garmin Connect...")
+    activities, raw_activities = fetch_activities(client, args.days)
     print(f"  {len(activities)} activities")
-    sleep = fetch_sleep(client, args.days)
+    new_in_history = append_history(raw_activities, HISTORY_PATH)
+    print(f"  {new_in_history} new appended to {HISTORY_PATH.name}")
+    print(f"Pulling last {DISPLAY_WINDOW_DAYS} days of sleep + RHR...")
+    sleep = fetch_sleep(client, DISPLAY_WINDOW_DAYS)
     print(f"  {len(sleep)} sleep records")
-    rhr = fetch_resting_hr(client, args.days)
+    rhr = fetch_resting_hr(client, DISPLAY_WINDOW_DAYS)
     print(f"  {len(rhr)} resting-HR records")
+
+    today = date.today()
+    cutoff = (today - timedelta(days=DISPLAY_WINDOW_DAYS)).isoformat()
+    activities_for_state = [a for a in activities if a["date"] >= cutoff]
 
     state = json.loads(STATE_PATH.read_text())
     state.setdefault("garmin", {})
-    state["garmin"]["last_synced"] = date.today().isoformat()
-    state["garmin"]["recent_activities"] = activities
+    state["garmin"]["last_synced"] = today.isoformat()
+    state["garmin"]["recent_activities"] = activities_for_state
     state["garmin"]["recent_sleep"] = sleep
     state["garmin"]["recent_resting_hr"] = rhr
     STATE_PATH.write_text(json.dumps(state, indent=2) + "\n")

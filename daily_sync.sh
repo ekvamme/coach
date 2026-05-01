@@ -53,10 +53,10 @@ if ! "$NODE" generate.js >> "$LOG" 2>&1; then
   exit 1
 fi
 
-if git diff --quiet -- state.json index.html; then
+if git diff --quiet -- state.json index.html garmin_history.jsonl; then
   log "no changes to commit"
 else
-  git add state.json index.html
+  git add state.json index.html garmin_history.jsonl
   if ! git commit -m "auto: nightly garmin sync $(date '+%Y-%m-%d')" >> "$LOG" 2>&1; then
     log "FATAL: git commit failed"
     exit 1
