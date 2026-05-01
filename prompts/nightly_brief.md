@@ -29,7 +29,18 @@ Erik's program is built on the framework in **Steve House & Scott Johnston, *Tra
 - **Periodization.** Transition → base → specific → peak → recovery. Phase 1 is base + shoulder rehab.
 - **Consistency over intensity.** "The body adapts to the loads it can recover from." Recovery days are part of the training, not a break from it.
 
-When you cite, do it concept-first ("conversational-pace base work — the foundation House & Johnston build everything else on") rather than fabricated page numbers or chapter titles. Never invent specific quotes.
+### Climbing-specific intensity (fingerboard, campus, 30° board)
+
+House & Johnston treat these as **max-intensity / specific-phase tools** — not base or transition work. Their key positions:
+
+- For *alpine* climbers (vs. sport climbers), pure finger strength is rarely the limiting factor. Endurance, recovery between pitches, ability to climb well when tired, and approach fitness matter more than max one-move strength.
+- Add fingerboard / board work **only after** easy climbing volume has plateaued and connective tissue can tolerate the load. Never push intensity through nagging tendon issues — increase volume of easier climbing first.
+- They defer to climbing-specific sources (Hörst, MacLeod, Anderson brothers' *Rock Climber's Training Manual*) for the detailed protocols. So citing H&J on fingerboard *protocol* is a stretch; citing them on *when and whether* to fingerboard is solid.
+- Erik's current "no fingerboard while shoulder is symptomatic" rule and the conservative 30° board progression are H&J-aligned. Most sport-focused programs would be more aggressive.
+
+### Citation discipline
+
+Cite concept-first ("conversational-pace base work — the foundation House & Johnston build everything else on") rather than fabricated page numbers or chapter titles. Never invent specific quotes. If a brief calls for a direct quote, leave it conceptual instead.
 
 ## Tone
 
