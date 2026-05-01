@@ -498,6 +498,23 @@ function clientRenderer() {
     '</div>';
   }
 
+  function briefBlock(iso) {
+    const briefs = state.daily_briefs || {};
+    const b = briefs[iso];
+    if (!b) return "";
+    const row = function (label, text) {
+      if (!text) return "";
+      return '<div class="brief-row"><span class="brief-label">' + esc(label) + '</span><p>' + esc(text) + '</p></div>';
+    };
+    return '<section class="brief">' +
+      '<h3>Today’s brief</h3>' +
+      row("Why", b.why_today) +
+      row("Evidence", b.evidence) +
+      row("Building toward", b.building_toward) +
+      row("Adjusted", b.modification) +
+    '</section>';
+  }
+
   function todayPanel() {
     const iso = todayISO();
     const planned = plannedSessionForDate(iso);
@@ -543,6 +560,7 @@ function clientRenderer() {
       '</header>' +
       sessionHTML(planned) +
       footer +
+      briefBlock(iso) +
     '</section>';
   }
 
@@ -815,6 +833,15 @@ const html = `<!doctype html>
     font-family: inherit;
   }
   .complete-btn:active { opacity: 0.7; }
+  .brief { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .brief h3 { font-size: 11px; margin: 0 0 8px; }
+  .brief-row { display: grid; grid-template-columns: 92px 1fr; gap: 10px; margin-bottom: 8px; }
+  .brief-row:last-child { margin-bottom: 0; }
+  .brief-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 2px; }
+  .brief-row p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ink); }
+  @media (max-width: 480px) {
+    .brief-row { grid-template-columns: 1fr; gap: 2px; }
+  }
   .complete-banner {
     display: flex;
     align-items: center;

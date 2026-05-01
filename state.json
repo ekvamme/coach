@@ -92,5 +92,13 @@
       }
     ]
   },
-  "open_questions": []
+  "open_questions": [],
+  "daily_briefs": {
+    "2026-05-01": {
+      "why_today": "Friday sits between yesterday's Strength B and tomorrow's Long Day — the lightest slot of the week, by design. Today is a deliberate offload, not a missed session.",
+      "evidence": "Polarized training research (Seiler, Foster) consistently shows that low-intensity recovery days protect the quality of hard days; cutting them out reduces output on the workouts that actually drive adaptation, and ACWR drift into the injury-risk band starts when tissue load piles up without these valves.",
+      "building_toward": "Phase 1 base + shoulder. Mobility today keeps the runner anti-tightening work and the PT shoulder staples (band ER, foam roller t-spine) in weekly rotation without adding load — small deposits, big interest by mid-July.",
+      "modification": null
+    }
+  }
 }
