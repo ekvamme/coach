@@ -26,11 +26,25 @@
       "planned": "Run \u2014 hilly zone 2",
       "did": "5.4 mi run in 50 min (\u22489:15/mi pace)",
       "shoulder_during": "green",
-      "shoulder_post_24h": null,
+      "shoulder_post_24h": "green",
       "sleep_side_tolerance": null,
-      "notes": "1/10 anterior shoulder burning during run, very mild.",
+      "notes": "1/10 anterior shoulder burning during run, very mild. AM next-day check (4/30): 1/10, felt good overall.",
       "processed_memos": [
-        "coach-20260429-1219.json"
+        "coach-20260429-1219.json",
+        "coach-20260430-2141.json"
+      ]
+    },
+    {
+      "date": "2026-04-30",
+      "planned": "Strength B",
+      "did": "Strength B as prescribed. Prone Y-T-W @ 5 lb DBs; Cossack squat @ 17.5 lb KB; ATG/Bulgarian split squat @ 15 lb KB; single-leg RDL @ 17.5 lb KB.",
+      "shoulder_during": "green",
+      "shoulder_post_24h": "green",
+      "sleep_side_tolerance": null,
+      "notes": "Loads above week-1 prescription on Cossack (17.5 KB vs BW) and split squat (15 KB vs BW); single-leg RDL 17.5 vs prescribed 20. Workout went well. AM next-day check (5/1): zero pain.",
+      "processed_memos": [
+        "coach-20260430-2141.json",
+        "coach-20260501-0705.json"
       ]
     }
   ],
