@@ -9,7 +9,7 @@
   "current_week_overrides": {
     "2026-05-01": {
       "session_id": "climb_quarry",
-      "label": "Climb #1 — Auburn Quarry (substituted for Friday mobility)",
+      "label": "Climb #1 \u2014 Auburn Quarry (substituted for Friday mobility)",
       "reason": "Fri: traded mobility for a quarry climb (rope solo, climbed to forearm fatigue + took a fall). E-bike approach z2 w/ 20 lb pack, brief level-up on first 400 ft of stagecoach. Shoulder green throughout. There was no Monday climb this week (program started Tue 4/28), so net climb count for the week is unchanged. Saturday Long Day (conversational hike) stands."
     }
   },
@@ -56,11 +56,11 @@
     {
       "date": "2026-05-01",
       "planned": "Mobility only OR rest",
-      "did": "Climb #1 — Auburn Quarry rope solo (substituted for Friday mobility). E-bike approach + return at zone 2 with 20 lb climbing pack; brief level-up for first 400 ft of stagecoach trail then back to z2 the rest of the way home. Climbed until forearm fatigue and took a fall. AM mobility stretches done.",
+      "did": "Climb #1 \u2014 Auburn Quarry rope solo (substituted for Friday mobility). E-bike approach + return at zone 2 with 20 lb climbing pack; brief level-up for first 400 ft of stagecoach trail then back to z2 the rest of the way home. Climbed until forearm fatigue and took a fall. AM mobility stretches done.",
       "shoulder_during": "green",
       "shoulder_post_24h": null,
       "sleep_side_tolerance": null,
-      "notes": "Zero shoulder pain throughout. Effectively shifted Monday's climbing slot to Friday — there was no Monday climb this week (program started Tue 4/28), so weekly climb count unchanged. Good leg burn from yesterday's Strength B. Garmin log for the ride coming.",
+      "notes": "Zero shoulder pain throughout. Effectively shifted Monday's climbing slot to Friday \u2014 there was no Monday climb this week (program started Tue 4/28), so weekly climb count unchanged. Good leg burn from yesterday's Strength B. Garmin log for the ride coming.",
       "processed_memos": [
         "coach-20260501-1234.json"
       ]
@@ -69,6 +69,14 @@
   "garmin": {
     "last_synced": "2026-05-01",
     "recent_activities": [
+      {
+        "date": "2026-05-01",
+        "type": "Climb",
+        "detail": "1:12:13 \u00b7 avg HR 118",
+        "raw_type": "indoor_climbing",
+        "elevation_gain_m": 93.03999999910593,
+        "training_load": 51.59918212890625
+      },
       {
         "date": "2026-04-29",
         "type": "Trail run",

@@ -19,6 +19,7 @@ Usage:
 """
 
 import argparse
+import inspect
 import json
 import os
 import sys
@@ -26,6 +27,15 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from garminconnect import Garmin
+
+# System Python 3.9 has garminconnect 0.2.8, which lacks prompt_mfa; without
+# this guard the wrong-interpreter failure is an opaque TypeError mid-login.
+if "prompt_mfa" not in inspect.signature(Garmin.__init__).parameters:
+    sys.exit(
+        f"ERROR: garminconnect at {Garmin.__module__!r} is too old "
+        "(missing 'prompt_mfa'). Run via the project venv:\n"
+        "  /Users/kvamme/Desktop/exercise/.venv/bin/python garmin_fetch.py"
+    )
 
 ROOT = Path(__file__).parent
 STATE_PATH = ROOT / "state.json"
