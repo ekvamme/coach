@@ -66,5 +66,9 @@ awk '
 ' "$LOG" | tail -5
 
 echo
+echo "=== Latest brief (from log) ==="
+grep "^BRIEF:" "$LOG" | tail -1 | sed 's/^/  /' || echo "  none yet"
+
+echo
 echo "=== Last 12 raw log lines ==="
 tail -12 "$LOG" | sed 's/^/  /'
