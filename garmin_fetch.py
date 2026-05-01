@@ -67,7 +67,7 @@ def get_client(no_login: bool):
     Prefers cached tokens. If --no-login is set and no cache exists, exits
     cleanly so a misconfigured cron never hammers SSO.
     """
-    has_cache = TOKEN_DIR.exists() and (TOKEN_DIR / "oauth1_token.json").exists()
+    has_cache = TOKEN_DIR.exists() and (TOKEN_DIR / "garmin_tokens.json").exists()
 
     if no_login and not has_cache:
         sys.exit(
