@@ -6,7 +6,13 @@
     "phase": "1 \u2014 Base + shoulder",
     "phase_window": "May \u2192 mid-July 2026"
   },
-  "current_week_overrides": {},
+  "current_week_overrides": {
+    "2026-05-01": {
+      "session_id": "climb_quarry",
+      "label": "Climb #1 — Auburn Quarry (substituted for Friday mobility)",
+      "reason": "Fri: traded mobility for a quarry climb (rope solo, climbed to forearm fatigue + took a fall). E-bike approach z2 w/ 20 lb pack, brief level-up on first 400 ft of stagecoach. Shoulder green throughout. There was no Monday climb this week (program started Tue 4/28), so net climb count for the week is unchanged. Saturday Long Day (conversational hike) stands."
+    }
+  },
   "log": [
     {
       "date": "2026-04-28",
@@ -45,6 +51,18 @@
       "processed_memos": [
         "coach-20260430-2141.json",
         "coach-20260501-0705.json"
+      ]
+    },
+    {
+      "date": "2026-05-01",
+      "planned": "Mobility only OR rest",
+      "did": "Climb #1 — Auburn Quarry rope solo (substituted for Friday mobility). E-bike approach + return at zone 2 with 20 lb climbing pack; brief level-up for first 400 ft of stagecoach trail then back to z2 the rest of the way home. Climbed until forearm fatigue and took a fall. AM mobility stretches done.",
+      "shoulder_during": "green",
+      "shoulder_post_24h": null,
+      "sleep_side_tolerance": null,
+      "notes": "Zero shoulder pain throughout. Effectively shifted Monday's climbing slot to Friday — there was no Monday climb this week (program started Tue 4/28), so weekly climb count unchanged. Good leg burn from yesterday's Strength B. Garmin log for the ride coming.",
+      "processed_memos": [
+        "coach-20260501-1234.json"
       ]
     }
   ],
@@ -98,7 +116,7 @@
       "why_today": "Friday is the deliberate offload between yesterday's Strength B and tomorrow's Long Day \u2014 the lightest slot of the week, by design. Mobility, not nothing.",
       "evidence": "House & Johnston (Training for the New Alpinism) treat recovery days as part of the training, not a break from it: the body adapts to the loads it can recover from. Skipping the easy day degrades both the hard day before and the long day after, and is the classic path into the no-man's-land of moderate fatigue without adaptation.",
       "building_toward": "Phase 1 base + shoulder. Mobility today keeps the runner anti-tightening work and the PT shoulder staples (band ER, foam roller t-spine) in weekly rotation \u2014 small consistent deposits, which House & Johnston identify as the actual driver of long-arc fitness over heroic single sessions.",
-      "modification": null
+      "modification": "Substituted: did Climb #1 at Auburn Quarry instead of Friday mobility (e-bike approach z2 w/ 20 lb pack, climbed to forearm fatigue, took a fall). Net climb count for the week unchanged \u2014 there was no Monday climb (program started Tue 4/28), so this is the Monday slot landing on Friday. Saturday Long Day (conversational hike) stands."
     },
     "2026-05-02": {
       "why_today": "Saturday is the long-day slot \u2014 the week's highest volume, placed after Friday's offload so you come in fresh. Week A is a long hilly hike at conversational pace.",
