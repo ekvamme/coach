@@ -95,9 +95,15 @@
   "open_questions": [],
   "daily_briefs": {
     "2026-05-01": {
-      "why_today": "Friday sits between yesterday's Strength B and tomorrow's Long Day — the lightest slot of the week, by design. Today is a deliberate offload, not a missed session.",
+      "why_today": "Friday sits between yesterday's Strength B and tomorrow's Long Day \u2014 the lightest slot of the week, by design. Today is a deliberate offload, not a missed session.",
       "evidence": "Polarized training research (Seiler, Foster) consistently shows that low-intensity recovery days protect the quality of hard days; cutting them out reduces output on the workouts that actually drive adaptation, and ACWR drift into the injury-risk band starts when tissue load piles up without these valves.",
-      "building_toward": "Phase 1 base + shoulder. Mobility today keeps the runner anti-tightening work and the PT shoulder staples (band ER, foam roller t-spine) in weekly rotation without adding load — small deposits, big interest by mid-July.",
+      "building_toward": "Phase 1 base + shoulder. Mobility today keeps the runner anti-tightening work and the PT shoulder staples (band ER, foam roller t-spine) in weekly rotation without adding load \u2014 small deposits, big interest by mid-July.",
+      "modification": null
+    },
+    "2026-05-02": {
+      "why_today": "Saturday is the long-day slot \u2014 your highest-volume session of the week, placed after Friday's offload so you come in fresh. Week A means a long hilly hike.",
+      "evidence": "Extended low-intensity work (2\u20134 hr, conversational pace) builds aerobic base and connective-tissue durability without the eccentric stress that climbing and strength days impose on the shoulder. The progressive pack loading (bodyweight \u2192 25 lb over weeks) adds capacity without spiking ACWR.",
+      "building_toward": "Aerobic floor for the December marathon goal and general climbing endurance. Once 4 weeks pass symptom-free, Week B (tension board + easy run) becomes the default and you move to 2\u00d7 climbing/wk \u2014 the hike weeks are earning that transition.",
       "modification": null
     }
   }
