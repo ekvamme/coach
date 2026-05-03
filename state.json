@@ -64,11 +64,29 @@
       "processed_memos": [
         "coach-20260501-1234.json"
       ]
+    },
+    {
+      "date": "2026-05-02",
+      "planned": "Long day — Week A hike (long hilly hike, 2–4 hr conversational, 5/15/25 lb pack)",
+      "did": "Trail run 6.3 mi, 1:11:14, avg HR 149, 259 m gain (Garmin) — substituted run for the prescribed hike. No self-report yet — fields below inferred from Garmin only.",
+      "shoulder_during": null,
+      "shoulder_post_24h": null,
+      "sleep_side_tolerance": null,
+      "notes": "Inferred from Garmin pull on 5/3 — Erik hasn't reported this session yet. Ran instead of hiked: pace ~11:18/mi over 6.3 mi with 259 m gain = clearly running, not fast hiking. Avg HR 149 sits in upper z2 / low z3, similar to his 4/29 trail run (HR 156). Load 129 — meaningful aerobic load. Total week captured load: Wed 175 + Fri 124 + Sat 129 = 428.",
+      "processed_memos": []
     }
   ],
   "garmin": {
-    "last_synced": "2026-05-01",
+    "last_synced": "2026-05-03",
     "recent_activities": [
+      {
+        "date": "2026-05-02",
+        "type": "Trail run",
+        "detail": "6.3 mi \u00b7 1:11:14 \u00b7 avg HR 149",
+        "raw_type": "trail_running",
+        "elevation_gain_m": 259.2099999934435,
+        "training_load": 128.84677124023438
+      },
       {
         "date": "2026-05-01",
         "type": "MTB",
@@ -113,8 +131,16 @@
     "recent_sleep": [],
     "recent_resting_hr": [
       {
+        "date": "2026-05-03",
+        "bpm": 64
+      },
+      {
+        "date": "2026-05-02",
+        "bpm": 68
+      },
+      {
         "date": "2026-05-01",
-        "bpm": 105
+        "bpm": 75
       },
       {
         "date": "2026-04-30",
@@ -146,7 +172,7 @@
       "why_today": "Saturday is the long-day slot \u2014 the week's highest volume, placed after Friday's offload so you come in fresh. Week A is a long hilly hike at conversational pace.",
       "evidence": "This is the cornerstone session of the House & Johnston framework: long, low-intensity aerobic work at MAF / nose-breathing pace, building mitochondrial density and connective-tissue durability. They argue the aerobic base is the floor everything else (climbing endurance, recovery between hard efforts, day-after capacity) sits on \u2014 and that Zone 3 'tempo' work would actively undermine it.",
       "building_toward": "Aerobic floor for the December marathon goal and the multi-pitch granite endurance you'll need in Yosemite. Per the Phase 1 stop-light: 4 symptom-free weeks unlocks Week B (tension board + easy run) and a second climbing day \u2014 the hike weeks are earning that transition.",
-      "modification": "Heads-up: Friday wasn't an offload \u2014 you stacked an MTB approach (load 72, 348 m gain w/ 20 lb pack) and a quarry rope solo (load 52) for ~124 of training load on what was meant to be a recovery day. That was the right call (climbing wins, shoulder green throughout) but it changes the inputs for today: legs and posterior chain are coming in already-loaded after Thursday's Strength B + Friday's MTB climbing, not rested. Adjustments: (1) hold the lower end of the duration range \u2014 aim 2\u20132.5 hr instead of pushing toward 4 hr; (2) be religious about conversational pace / nose-breathing \u2014 don't let any Z3 creep into the climbs since today is the second consecutive aerobic-loaded day with a 20+ lb pack already in the legs; (3) drop pack weight a notch from whatever you were planning (e.g., 5\u201310 lb instead of 15+). The point of the Long Day is connective-tissue durability and mitochondrial density at low intensity \u2014 that benefit is preserved at 2 hr just as well as 4 hr, and trying to hit max planned volume on tired legs is exactly the no-man's-land H&J warn against. If legs feel surprisingly fresh 45 min in, fine \u2014 extend. But start short."
+      "modification": "Substituted a trail run for the prescribed hike (Garmin: 6.3 mi, 1:11:14, avg HR 149, 259 m gain, load 129). Three reads on this. (1) Intensity went the wrong direction. The Friday cascade said 'religious about conversational pace / nose-breathing \u2014 don't let any Z3 creep into the climbs.' HR 149 on a 6.3 mi run is upper z2 / low z3 \u2014 basically the same intensity profile as the 4/29 trail run (HR 156). That violates the H&J Long Day prescription, which is specifically about low-intensity aerobic volume; running at 149 BPM converts the Long Day from base-building into a moderate tempo session. (2) Volume came in lighter than the hike would have been. 1:11:14 vs the prescribed 2\u20134 hr means the connective-tissue / mitochondrial benefit of the Long Day was *not* delivered \u2014 even at 2 hr conservative, that's longer than 1:11. So you got intensity you didn't need and skipped the duration you did. (3) Total week captured load: 428 (Wed 175 + Fri 124 + Sat 129) \u2014 fine on ACWR, but mis-distributed. Net read: probably the legs felt cooked from Friday and the run was the path of least resistance at the actual capacity you had \u2014 if so, the fatigue was real and the right call was the shorter-duration hike, not a faster run. Worth asking Erik what drove the swap so we can either adjust the rule (Long Day defaults to a shorter, less z2-strict option after a Friday quarry stack) or reinforce it."
     }
   }
 }
