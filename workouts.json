@@ -71,10 +71,10 @@
     "monday": { "session_id": "climb_quarry", "label": "Climb #1 — Auburn Quarry rope solo" },
     "tuesday": { "session_id": "strength_a", "label": "Strength A — pull / cuff / core" },
     "wednesday": { "session_id": "run_hilly_z2", "label": "Run — hilly zone 2" },
-    "thursday": { "session_id": "strength_b", "label": "Strength B — push / hinge / cuff" },
-    "friday": { "session_id": "mobility_or_rest", "label": "Mobility only OR rest" },
-    "saturday": { "session_id": "long_day", "label": "Long day — see Saturday alternates" },
-    "sunday": { "session_id": "rest", "label": "Rest" }
+    "thursday": { "session_id": "long_day", "label": "Long day (Thu — see alternates)" },
+    "friday": { "session_id": "strength_b", "label": "Strength B — push / hinge / cuff" },
+    "saturday": { "session_id": "weekend_cardio_or_rest", "label": "Short cardio that fits the work window OR rest" },
+    "sunday": { "session_id": "rest", "label": "Rest (work)" }
   },
 
   "sessions": {
@@ -168,12 +168,27 @@
     },
 
     "long_day": {
-      "title": "Long day (alternates: Hike OR Climb #2)",
+      "title": "Long day (Thu — alternates: Hike OR Climb #2)",
       "duration": "90 min – 4 hr",
       "notes": [
-        "Week A: Long hilly hike, 2–4 hr conversational. Light pack → progress to weighted (5/15/25 lb).",
+        "Week A: Long hilly hike or 8–10 mi run, 2–4 hr conversational. Light pack → progress to weighted (5/15/25 lb).",
         "Week B: Home tension board 30–45 min, vertical to slight overhang ONLY (not 30°). Followed by 60–90 min easy bike or run.",
-        "Alternate weekly until 4 weeks symptom-free at this volume — then make Week B the default and the schedule becomes 2× climbing/wk."
+        "Alternate weekly until 4 weeks symptom-free at this volume — then make Week B the default and the schedule becomes 2× climbing/wk.",
+        "Buffered by Wed Run z2 the day before (light aerobic; legs come in fresh) and Strength B the day after (legs-on-legs — silent downscale Strength B loads if Long Day went hard)."
+      ],
+      "warmup": [],
+      "exercises": [],
+      "cooldown_ref": "post_run_mobility"
+    },
+
+    "weekend_cardio_or_rest": {
+      "title": "Short cardio that fits the work window OR rest",
+      "duration": "60–90 min if work allows; otherwise rest",
+      "notes": [
+        "Erik works most Saturdays through May (lifts in June). Sunday work continues into summer.",
+        "Choose: short slow run, easy bike, mobility block, OR rest — whatever the work day leaves room for.",
+        "This is bonus aerobic, not the week's main aerobic work — Wed z2 + Thu Long Day cover that.",
+        "Auburn hills mean even slow runs can drift into z3 — that's geography, not a violation. Stay in conversational effort."
       ],
       "warmup": [],
       "exercises": [],

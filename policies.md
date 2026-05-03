@@ -24,7 +24,7 @@ Tuned for Erik's resilience profile (slightly more permissive than textbook).
 
 | ACWR | Read | Action |
 |---|---|---|
-| < 0.8 | Undertrained | **Propose adding load**: extra session, longer Saturday, bump prescription |
+| < 0.8 | Undertrained | **Propose adding load**: extra session, longer Long Day, bump prescription |
 | 0.8–1.5 | Optimal-to-high (good zone for you) | Proceed |
 | 1.5–2.0 | Spike | Propose easier *intensity* on next session, keep volume |
 | > 2.0 | Real risk | Recovery day; reshuffle the week |
