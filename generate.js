@@ -185,7 +185,10 @@ function clientRenderer() {
     const load = ex.load ? '<div class="ex-load">' + esc(ex.load) + '</div>' : "";
     const note = ex.note ? '<div class="note">' + esc(ex.note) + '</div>' : "";
     const pres = ex.prescription || "";
-    return '<li class="ex" data-prescription="' + esc(pres) + '">' +
+    const programAttr = ex.timer_program
+      ? ' data-timer-program="' + esc(JSON.stringify(ex.timer_program)) + '"'
+      : "";
+    return '<li class="ex" data-prescription="' + esc(pres) + '"' + programAttr + '>' +
       '<div class="ex-head">' +
         '<span class="ex-name">' + nameHtml + tag + '</span>' +
         '<span class="ex-pres">' + esc(pres) + '</span>' +
@@ -317,6 +320,8 @@ function clientRenderer() {
       const slot = slots[i];
       if (slot.firstChild) continue;
       const li = slot.closest(".ex");
+      // Structured timer programs supersede prescription parsing — handled separately.
+      if (li.dataset.timerProgram) continue;
       const t = parseDuration(li.dataset.prescription);
       if (!t) continue;
       const btn = document.createElement("button");
@@ -327,6 +332,155 @@ function clientRenderer() {
       btn._summary = timerSummary(t);
       slot.appendChild(btn);
     }
+  }
+
+  function decorateProgramTimers(root) {
+    const els = root.querySelectorAll(".ex[data-timer-program]");
+    for (let i = 0; i < els.length; i++) {
+      const li = els[i];
+      const slot = li.querySelector(".timer-slot");
+      if (!slot || slot.firstChild) continue;
+      let prog;
+      try { prog = JSON.parse(li.dataset.timerProgram); } catch (e) { continue; }
+      const totalReps = prog.sets * prog.reps_per_set;
+      const totalWorkSec = totalReps * prog.work_seconds;
+      const summary = "▶ Start full-screen timer · " + prog.sets + "×" + prog.reps_per_set
+        + " · " + prog.work_seconds + "s on / " + prog.rest_seconds + "s off"
+        + " (" + Math.round(totalWorkSec / 60) + " min total work)";
+      const btn = document.createElement("button");
+      btn.className = "fullscreen-timer-btn";
+      btn.textContent = summary;
+      btn.setAttribute("aria-label", "Start full-screen hangboard timer");
+      btn.addEventListener("click", function () { startProgramTimer(prog); });
+      slot.appendChild(btn);
+    }
+  }
+
+  // ---------- full-screen program timer ----------
+  // Expands a program into a flat phase array. Phase types: ready (yellow,
+  // 3s before each rep), work (green), rest (red, between reps), set_rest
+  // (dark red, longer pause between sets).
+  function expandProgram(prog) {
+    const phases = [];
+    for (let s = 0; s < prog.sets; s++) {
+      for (let r = 0; r < prog.reps_per_set; r++) {
+        phases.push({
+          type: "ready", seconds: prog.transition_seconds,
+          label: "GET READY", sub: "Set " + (s + 1) + " of " + prog.sets + " · Hang " + (r + 1) + " of " + prog.reps_per_set
+        });
+        phases.push({
+          type: "work", seconds: prog.work_seconds,
+          label: "HANG", sub: "Set " + (s + 1) + " of " + prog.sets + " · Hang " + (r + 1) + " of " + prog.reps_per_set
+        });
+        const isLastRepOfSet = r === prog.reps_per_set - 1;
+        const isLastSet = s === prog.sets - 1;
+        if (isLastRepOfSet && isLastSet) break;
+        if (isLastRepOfSet) {
+          phases.push({
+            type: "set_rest", seconds: prog.set_rest_seconds,
+            label: "SET REST", sub: "Recover before set " + (s + 2) + " of " + prog.sets
+          });
+        } else {
+          phases.push({
+            type: "rest", seconds: prog.rest_seconds,
+            label: "REST", sub: "Set " + (s + 1) + " of " + prog.sets + " · Hang " + (r + 2) + " of " + prog.reps_per_set + " coming"
+          });
+        }
+      }
+    }
+    phases.push({ type: "done", seconds: 0, label: "DONE", sub: "Workout complete. Tap to close." });
+    return phases;
+  }
+
+  let program = null;
+  function startProgramTimer(prog) {
+    if (active) stopActiveTimer(false);
+    program = {
+      phases: expandProgram(prog),
+      idx: 0, startedAt: Date.now(), paused: false, elapsedAtPause: 0,
+      wakeLock: null, raf: null, prog: prog
+    };
+    const overlay = document.getElementById("ft-overlay");
+    overlay.classList.add("active");
+    overlay.removeAttribute("aria-hidden");
+    document.body.classList.add("ft-open");
+    if (navigator.wakeLock) {
+      navigator.wakeLock.request("screen").then(function (lock) {
+        if (program) program.wakeLock = lock;
+      }).catch(function () {});
+    }
+    renderProgramPhase();
+    tickProgram();
+  }
+
+  function renderProgramPhase() {
+    if (!program) return;
+    const p = program.phases[program.idx];
+    const overlay = document.getElementById("ft-overlay");
+    overlay.dataset.phase = p.type;
+    document.getElementById("ft-label").textContent = p.label;
+    document.getElementById("ft-sub").textContent = p.sub;
+    document.getElementById("ft-progress").textContent =
+      "Phase " + (program.idx + 1) + " of " + program.phases.length;
+    document.getElementById("ft-pause").textContent = program.paused ? "▶ Resume" : "❚❚ Pause";
+    if (p.type === "done") {
+      document.getElementById("ft-time").textContent = "✓";
+      document.getElementById("ft-pause").style.display = "none";
+    } else {
+      document.getElementById("ft-pause").style.display = "";
+    }
+  }
+
+  function tickProgram() {
+    if (!program || program.paused) return;
+    const p = program.phases[program.idx];
+    if (p.type === "done") return;
+    const now = Date.now();
+    const elapsed = (now - program.startedAt) / 1000;
+    const remaining = p.seconds - elapsed;
+    if (remaining <= 0) {
+      program.idx++;
+      program.startedAt = now;
+      const next = program.phases[program.idx];
+      // Distinct cues: double-beep on rep start (work), single beep on transitions.
+      if (next.type === "work") beep(true);
+      else if (next.type === "done") {
+        beep(true);
+        setTimeout(function () { beep(true); }, 400);
+      } else beep(false);
+      renderProgramPhase();
+      if (next.type === "done") return;
+      program.raf = requestAnimationFrame(tickProgram);
+      return;
+    }
+    document.getElementById("ft-time").textContent = String(Math.ceil(remaining));
+    program.raf = requestAnimationFrame(tickProgram);
+  }
+
+  function pauseProgram() {
+    if (!program) return;
+    if (program.paused) {
+      program.startedAt = Date.now() - program.elapsedAtPause;
+      program.paused = false;
+      renderProgramPhase();
+      tickProgram();
+    } else {
+      program.elapsedAtPause = Date.now() - program.startedAt;
+      program.paused = true;
+      if (program.raf) cancelAnimationFrame(program.raf);
+      renderProgramPhase();
+    }
+  }
+
+  function closeProgram() {
+    if (!program) return;
+    if (program.raf) cancelAnimationFrame(program.raf);
+    if (program.wakeLock) try { program.wakeLock.release(); } catch (e) {}
+    program = null;
+    const overlay = document.getElementById("ft-overlay");
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("ft-open");
   }
 
   // ---------- timer controller (one active timer at a time) ----------
@@ -624,6 +778,7 @@ function clientRenderer() {
     document.getElementById("week-panel").innerHTML = weekPanel();
     document.getElementById("streak-panel").innerHTML = streakPanel();
     decorateTimers(document.body);
+    decorateProgramTimers(document.body);
     lastDay = todayISO();
   }
   renderDynamic();
@@ -642,6 +797,24 @@ function clientRenderer() {
         if (active.raf) cancelAnimationFrame(active.raf);
         tickActive();
       }
+      if (program && !program.paused) {
+        if (program.raf) cancelAnimationFrame(program.raf);
+        tickProgram();
+      }
+    }
+  });
+
+  // Full-screen timer controls (overlay lives in static HTML).
+  const ftPause = document.getElementById("ft-pause");
+  const ftClose = document.getElementById("ft-close");
+  const ftOverlay = document.getElementById("ft-overlay");
+  if (ftPause) ftPause.addEventListener("click", function () { pauseProgram(); });
+  if (ftClose) ftClose.addEventListener("click", function () { closeProgram(); });
+  if (ftOverlay) ftOverlay.addEventListener("click", function (e) {
+    // Tap anywhere on the overlay (other than the controls) when DONE to close.
+    if (program && program.phases[program.idx] && program.phases[program.idx].type === "done"
+        && !e.target.closest("#ft-controls")) {
+      closeProgram();
     }
   });
 
@@ -870,6 +1043,95 @@ const html = `<!doctype html>
   .weekcheck { color: var(--green); font-size: 11px; margin-left: 3px; font-weight: 700; }
   .weekgrid li.done { border-color: var(--green); }
   .streakcell.done { border-color: var(--green); background: rgba(74, 222, 128, 0.08); }
+
+  /* full-screen program timer (hangboard) */
+  .fullscreen-timer-btn {
+    display: block;
+    width: 100%;
+    margin: 8px 0 0;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--green);
+    color: #08130c;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.3;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fullscreen-timer-btn:active { transform: scale(0.98); }
+  body.ft-open { overflow: hidden; }
+  #ft-overlay {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 1000;
+    padding: 24px;
+    color: #fff;
+    font-family: inherit;
+    transition: background-color 250ms ease;
+    background: #111;
+  }
+  #ft-overlay.active { display: flex; }
+  #ft-overlay[data-phase="ready"] { background: #b8860b; }
+  #ft-overlay[data-phase="work"] { background: #167c3e; }
+  #ft-overlay[data-phase="rest"] { background: #b91c1c; }
+  #ft-overlay[data-phase="set_rest"] { background: #7f1d1d; }
+  #ft-overlay[data-phase="done"] { background: #0a0a0a; }
+  #ft-label {
+    font-size: clamp(40px, 10vw, 80px);
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin: 0 0 8px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  #ft-sub {
+    font-size: clamp(16px, 3.5vw, 22px);
+    opacity: 0.92;
+    margin: 0 0 24px;
+    max-width: 90%;
+  }
+  #ft-time {
+    font-size: clamp(120px, 32vw, 260px);
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #ft-progress {
+    margin-top: 20px;
+    font-size: 13px;
+    opacity: 0.75;
+    letter-spacing: 1px;
+  }
+  #ft-controls {
+    position: fixed;
+    bottom: 32px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+  #ft-pause, #ft-close {
+    appearance: none;
+    border: 2px solid rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 24px;
+    border-radius: 999px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #ft-pause:active, #ft-close:active { transform: scale(0.97); }
+  #ft-close { font-size: 14px; }
 </style>
 </head>
 <body>
@@ -883,6 +1145,17 @@ const html = `<!doctype html>
     ${garminPanel()}
     ${howToPanel()}
     <footer class="foot">Generated ${esc(new Date().toISOString())} · Phase: ${esc(state.user && state.user.phase || "—")}</footer>
+  </div>
+
+  <div id="ft-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ft-label">
+    <h2 id="ft-label">GET READY</h2>
+    <p id="ft-sub"></p>
+    <div id="ft-time">0</div>
+    <div id="ft-progress"></div>
+    <div id="ft-controls">
+      <button id="ft-pause" type="button">❚❚ Pause</button>
+      <button id="ft-close" type="button" aria-label="Close timer">✕ End</button>
+    </div>
   </div>
 
   <script id="data-workouts" type="application/json">${safeJSON(workouts)}</script>
