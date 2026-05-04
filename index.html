@@ -25,7 +25,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
   body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; overflow-x: hidden; }
   h1 { font-size: 18px; margin: 8px 0 16px; color: var(--dim); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
   h2 { font-size: 18px; margin: 0 0 12px; }
   h3 { font-size: 14px; margin: 14px 0 6px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -34,19 +34,19 @@
   .card.today header h2 { font-size: 22px; margin: 0 0 10px; }
   .session-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; color: var(--dim); font-size: 13px; }
   .badge.override { background: var(--accent); color: #0a0d12; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-  .override-reason { color: var(--accent); font-size: 12px; margin: 0 0 10px; line-height: 1.4; }
+  .override-reason { color: var(--accent); font-size: 12px; margin: 0 0 10px; line-height: 1.4; overflow-wrap: anywhere; }
   .notes { padding-left: 18px; margin: 6px 0 10px; }
-  .notes li { color: var(--dim); font-size: 14px; margin-bottom: 4px; }
+  .notes li { color: var(--dim); font-size: 14px; margin-bottom: 4px; overflow-wrap: anywhere; }
   .ex-list { list-style: none; padding: 0; margin: 0; }
-  .ex { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .ex { padding: 10px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
   .ex:last-child { border-bottom: 0; }
   .ex-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; min-width: 0; }
-  .ex-name { min-width: 0; word-wrap: break-word; }
+  .ex-name { min-width: 0; overflow-wrap: anywhere; }
   .ex-name a { color: var(--accent); text-decoration: none; }
   .ex-name a:active { opacity: 0.6; }
-  .ex-pres { color: var(--dim); font-size: 13px; text-align: right; flex-shrink: 0; max-width: 60%; word-wrap: break-word; }
-  .ex-load { font-size: 13px; color: var(--dim); margin-top: 2px; }
-  .note { font-size: 12px; color: var(--dim); margin-top: 4px; font-style: italic; }
+  .ex-pres { color: var(--dim); font-size: 13px; text-align: right; flex-shrink: 0; max-width: 60%; overflow-wrap: anywhere; }
+  .ex-load { font-size: 13px; color: var(--dim); margin-top: 2px; overflow-wrap: anywhere; }
+  .note { font-size: 12px; color: var(--dim); margin-top: 4px; font-style: italic; overflow-wrap: anywhere; }
   .tag { font-size: 10px; padding: 1px 5px; border-radius: 4px; vertical-align: middle; }
   .tag.mob { background: #2a3142; color: #a8c3ff; margin-left: 4px; }
   .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--empty); margin-right: 4px; vertical-align: middle; }
@@ -161,10 +161,10 @@
   .complete-btn:active { opacity: 0.7; }
   .brief { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
   .brief h3 { font-size: 11px; margin: 0 0 8px; }
-  .brief-row { display: grid; grid-template-columns: 92px 1fr; gap: 10px; margin-bottom: 8px; }
+  .brief-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; margin-bottom: 8px; }
   .brief-row:last-child { margin-bottom: 0; }
   .brief-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 2px; }
-  .brief-row p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ink); }
+  .brief-row p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
   @media (max-width: 480px) {
     .brief-row { grid-template-columns: 1fr; gap: 2px; }
   }
@@ -400,7 +400,7 @@
       </ul>
       <p class="dim small">Claude will update <code>state.json</code> and regenerate this page. If you want the schedule reshuffled (e.g., move Tue → Wed), Claude will ask first.</p>
     </section>
-    <footer class="foot">Generated 2026-05-04T16:41:08.852Z · Phase: 1 — Base + shoulder</footer>
+    <footer class="foot">Generated 2026-05-04T16:44:39.467Z · Phase: 1 — Base + shoulder</footer>
   </div>
 
   <div id="ft-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ft-label">
