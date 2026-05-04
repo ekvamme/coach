@@ -188,12 +188,14 @@ function clientRenderer() {
     const programAttr = ex.timer_program
       ? ' data-timer-program="' + esc(JSON.stringify(ex.timer_program)) + '"'
       : "";
-    return '<li class="ex" data-prescription="' + esc(pres) + '"' + programAttr + '>' +
+    const gripAttr = ex.grip ? ' data-grip="' + esc(ex.grip) + '"' : "";
+    const gripLine = ex.grip ? '<div class="ex-grip">' + esc(ex.grip) + '</div>' : "";
+    return '<li class="ex" data-prescription="' + esc(pres) + '"' + programAttr + gripAttr + '>' +
       '<div class="ex-head">' +
         '<span class="ex-name">' + nameHtml + tag + '</span>' +
         '<span class="ex-pres">' + esc(pres) + '</span>' +
       '</div>' +
-      load + note +
+      gripLine + load + note +
       '<span class="timer-slot"></span>' +
     '</li>';
   }
@@ -343,6 +345,7 @@ function clientRenderer() {
       let prog;
       try { prog = JSON.parse(li.dataset.timerProgram); } catch (e) { continue; }
       const exName = (li.querySelector(".ex-name") || {}).textContent || "Workout";
+      const grip = li.dataset.grip || "";
       const totalReps = prog.sets * prog.reps_per_set;
       const totalWorkSec = totalReps * prog.work_seconds;
       const summary = "▶ Start full-screen timer · " + prog.sets + "×" + prog.reps_per_set
@@ -354,18 +357,25 @@ function clientRenderer() {
       btn.setAttribute("aria-label", "Start full-screen hangboard timer");
       btn.addEventListener("click", function () {
         primeAudio(); // unlock audio synchronously inside the user gesture
-        startProgramTimer(prog, exName);
+        startProgramTimer(prog, exName, grip);
       });
       slot.appendChild(btn);
     }
   }
 
   // ---------- full-screen program timer ----------
-  // Expands a program into a flat phase array. Phase types: ready (yellow,
-  // 3s before each rep), work (green), rest (red, between reps), set_rest
-  // (dark red, longer pause between sets).
+  // Expands a program into a flat phase array. Phase types: prep (blue,
+  // optional safety briefing once at the start), ready (yellow, 3s before
+  // each rep), work (green), rest (red, between reps), set_rest (dark red,
+  // longer pause between sets).
   function expandProgram(prog) {
     const phases = [];
+    if (prog.prep_seconds && prog.prep_seconds > 0) {
+      phases.push({
+        type: "prep", seconds: prog.prep_seconds,
+        label: "PREP", sub: prog.prep_message || "Get into position."
+      });
+    }
     for (let s = 0; s < prog.sets; s++) {
       for (let r = 0; r < prog.reps_per_set; r++) {
         phases.push({
@@ -397,16 +407,20 @@ function clientRenderer() {
   }
 
   let program = null;
-  function startProgramTimer(prog, exerciseName) {
+  function startProgramTimer(prog, exerciseName, grip) {
     if (active) stopActiveTimer(false);
     program = {
       phases: expandProgram(prog),
       idx: 0, startedAt: Date.now(), paused: false, elapsedAtPause: 0,
       wakeLock: null, raf: null, prog: prog,
-      exerciseName: exerciseName || "Workout"
+      exerciseName: exerciseName || "Workout",
+      grip: grip || ""
     };
     const overlay = document.getElementById("ft-overlay");
     document.getElementById("ft-exercise").textContent = program.exerciseName;
+    const gripEl = document.getElementById("ft-grip");
+    gripEl.textContent = program.grip;
+    gripEl.style.display = program.grip ? "" : "none";
     overlay.classList.add("active");
     overlay.removeAttribute("aria-hidden");
     document.body.classList.add("ft-open");
@@ -1108,22 +1122,42 @@ const html = `<!doctype html>
     background: #111;
   }
   #ft-overlay.active { display: flex; }
+  #ft-overlay[data-phase="prep"] { background: #1e3a5f; }
   #ft-overlay[data-phase="ready"] { background: #b8860b; }
   #ft-overlay[data-phase="work"] { background: #167c3e; }
   #ft-overlay[data-phase="rest"] { background: #b91c1c; }
   #ft-overlay[data-phase="set_rest"] { background: #7f1d1d; }
   #ft-overlay[data-phase="done"] { background: #0a0a0a; }
-  #ft-exercise {
+  #ft-header {
     position: absolute;
     top: calc(env(safe-area-inset-top) + 16px);
     left: 0; right: 0;
     text-align: center;
+    padding: 0 24px;
+  }
+  #ft-exercise {
     font-size: clamp(15px, 4vw, 22px);
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
     opacity: 0.92;
-    padding: 0 24px;
+  }
+  #ft-grip {
+    margin-top: 4px;
+    font-size: clamp(13px, 3.5vw, 18px);
+    font-weight: 600;
+    opacity: 0.85;
+  }
+  /* During the prep phase the message is the focus, not the countdown. */
+  #ft-overlay[data-phase="prep"] #ft-sub {
+    font-size: clamp(20px, 4.5vw, 28px);
+    line-height: 1.45;
+    font-weight: 600;
+    margin: 24px 16px 16px;
+    max-width: 560px;
+  }
+  #ft-overlay[data-phase="prep"] #ft-time {
+    font-size: clamp(80px, 22vw, 180px);
   }
   #ft-label {
     font-size: clamp(40px, 10vw, 80px);
@@ -1191,7 +1225,10 @@ const html = `<!doctype html>
   </div>
 
   <div id="ft-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ft-exercise">
-    <div id="ft-exercise"></div>
+    <div id="ft-header">
+      <div id="ft-exercise"></div>
+      <div id="ft-grip"></div>
+    </div>
     <h2 id="ft-label">GET READY</h2>
     <p id="ft-sub"></p>
     <div id="ft-time">0</div>

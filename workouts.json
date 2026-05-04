@@ -202,9 +202,10 @@
       "exercises": [
         {
           "name": "Density Hang",
+          "grip": "20 mm edge · half-crimp or open hand",
           "prescription": "20s × 4 × 2",
           "load": "bodyweight",
-          "note": "20 mm+ edge · half-crimp or open hand · two-arm at standing reach · active scap throughout (no passive dead-hangs) · stop at any shoulder symptom · Wk 1 dose; progress toward 30s × 6 × 3 over weeks.",
+          "note": "Two-arm at standing reach · active scap throughout (no passive dead-hangs) · stop at any shoulder symptom · Wk 1 dose; progress toward 30s × 6 × 3 over weeks.",
           "timer_program": {
             "name": "Hangboard — Wk 1",
             "sets": 2,
@@ -212,7 +213,9 @@
             "work_seconds": 20,
             "rest_seconds": 15,
             "set_rest_seconds": 240,
-            "transition_seconds": 3
+            "transition_seconds": 3,
+            "prep_seconds": 10,
+            "prep_message": "Active scap: pull your shoulders down and back, engage your lats, chest open. Hang from the bones, not the joints. NO passive dead-hangs — drop off and reset position between every hang."
           }
         }
       ],
