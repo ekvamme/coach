@@ -342,6 +342,7 @@ function clientRenderer() {
       if (!slot || slot.firstChild) continue;
       let prog;
       try { prog = JSON.parse(li.dataset.timerProgram); } catch (e) { continue; }
+      const exName = (li.querySelector(".ex-name") || {}).textContent || "Workout";
       const totalReps = prog.sets * prog.reps_per_set;
       const totalWorkSec = totalReps * prog.work_seconds;
       const summary = "▶ Start full-screen timer · " + prog.sets + "×" + prog.reps_per_set
@@ -351,7 +352,10 @@ function clientRenderer() {
       btn.className = "fullscreen-timer-btn";
       btn.textContent = summary;
       btn.setAttribute("aria-label", "Start full-screen hangboard timer");
-      btn.addEventListener("click", function () { startProgramTimer(prog); });
+      btn.addEventListener("click", function () {
+        primeAudio(); // unlock audio synchronously inside the user gesture
+        startProgramTimer(prog, exName);
+      });
       slot.appendChild(btn);
     }
   }
@@ -393,14 +397,16 @@ function clientRenderer() {
   }
 
   let program = null;
-  function startProgramTimer(prog) {
+  function startProgramTimer(prog, exerciseName) {
     if (active) stopActiveTimer(false);
     program = {
       phases: expandProgram(prog),
       idx: 0, startedAt: Date.now(), paused: false, elapsedAtPause: 0,
-      wakeLock: null, raf: null, prog: prog
+      wakeLock: null, raf: null, prog: prog,
+      exerciseName: exerciseName || "Workout"
     };
     const overlay = document.getElementById("ft-overlay");
+    document.getElementById("ft-exercise").textContent = program.exerciseName;
     overlay.classList.add("active");
     overlay.removeAttribute("aria-hidden");
     document.body.classList.add("ft-open");
@@ -485,27 +491,50 @@ function clientRenderer() {
 
   // ---------- timer controller (one active timer at a time) ----------
   let active = null;
-  function beep(double) {
+  // One AudioContext lives for the whole page. iOS Safari only allows audio
+  // creation during a user gesture and silently drops contexts created later;
+  // we prime this on the first timer button tap and reuse it forever.
+  let _audioCtx = null;
+  function primeAudio() {
+    if (_audioCtx) {
+      if (_audioCtx.state === "suspended") _audioCtx.resume();
+      return _audioCtx;
+    }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
     try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      const ctx = new Ctx();
-      function tone(freq, t0, dur) {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.frequency.value = freq;
-        g.gain.setValueAtTime(0.0001, t0);
-        g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-        o.connect(g); g.connect(ctx.destination);
-        o.start(t0);
-        o.stop(t0 + dur + 0.05);
-      }
-      const t0 = ctx.currentTime;
-      tone(880, t0, 0.18);
-      if (double) tone(1175, t0 + 0.22, 0.22);
-      setTimeout(function () { try { ctx.close(); } catch (e) {} }, 1200);
-    } catch (e) {}
+      _audioCtx = new Ctx();
+      // Play a silent tone to fully unlock iOS audio. Without this the first
+      // real beep fired from a setTimeout / RAF loop is a no-op.
+      const o = _audioCtx.createOscillator();
+      const g = _audioCtx.createGain();
+      g.gain.value = 0;
+      o.connect(g); g.connect(_audioCtx.destination);
+      o.start(); o.stop(_audioCtx.currentTime + 0.01);
+    } catch (e) { _audioCtx = null; }
+    return _audioCtx;
+  }
+  function beep(double) {
+    const ctx = _audioCtx;
+    if (ctx) {
+      try {
+        if (ctx.state === "suspended") ctx.resume();
+        function tone(freq, t0, dur) {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(t0);
+          o.stop(t0 + dur + 0.05);
+        }
+        const t0 = ctx.currentTime;
+        tone(880, t0, 0.18);
+        if (double) tone(1175, t0 + 0.22, 0.22);
+      } catch (e) {}
+    }
     if (navigator.vibrate) try { navigator.vibrate(double ? [80, 60, 80] : [60]); } catch (e) {}
   }
   function teardownTimerUI(li) {
@@ -823,6 +852,7 @@ function clientRenderer() {
     const tBtn = e.target.closest(".timer-btn");
     if (tBtn) {
       e.preventDefault();
+      primeAudio();
       startTimer(tBtn);
       return;
     }
@@ -1083,6 +1113,18 @@ const html = `<!doctype html>
   #ft-overlay[data-phase="rest"] { background: #b91c1c; }
   #ft-overlay[data-phase="set_rest"] { background: #7f1d1d; }
   #ft-overlay[data-phase="done"] { background: #0a0a0a; }
+  #ft-exercise {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 16px);
+    left: 0; right: 0;
+    text-align: center;
+    font-size: clamp(15px, 4vw, 22px);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.92;
+    padding: 0 24px;
+  }
   #ft-label {
     font-size: clamp(40px, 10vw, 80px);
     font-weight: 900;
@@ -1148,7 +1190,8 @@ const html = `<!doctype html>
     <footer class="foot">Generated ${esc(new Date().toISOString())} · Phase: ${esc(state.user && state.user.phase || "—")}</footer>
   </div>
 
-  <div id="ft-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ft-label">
+  <div id="ft-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ft-exercise">
+    <div id="ft-exercise"></div>
     <h2 id="ft-label">GET READY</h2>
     <p id="ft-sub"></p>
     <div id="ft-time">0</div>
