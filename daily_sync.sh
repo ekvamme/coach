@@ -27,6 +27,10 @@ if ! "$VENV_PYTHON" garmin_fetch.py --no-login >> "$LOG" 2>&1; then
   log "WARN: garmin fetch failed (continuing with regen)"
 fi
 
+if ! "$VENV_PYTHON" weather_fetch.py >> "$LOG" 2>&1; then
+  log "WARN: weather fetch failed (continuing with regen)"
+fi
+
 # Generate / update tomorrow's brief via headless Claude.
 # Uses subscription auth (no API key). Runs after Garmin so it can react to
 # fresh data; runs before regen so the new brief gets embedded in index.html.

@@ -111,11 +111,24 @@ When I write to `current_week_overrides`, I include a `reason` field. The PWA re
 
 (The PWA's renderer needs a small update to surface `reason` — call it out when we wire this up.)
 
+## Weather — outdoor climbing block
+
+State.weather is fetched nightly (and on demand) from Open-Meteo. The rule:
+
+- **Any precip in past 24h OR forecast in next 24h → block outdoor climbing.** Granite at the quarry stays slick well after rain stops; sending Erik to the quarry on damp rock is a falling hazard.
+- Affected sessions: `climb_quarry` (always outdoor) and `long_day` Week B (outdoor tension board).
+- Substitute: `hangboard_indoor` — placeholder session pending Erik's phase-appropriate prescription. Pair with an easy run/bike if the original session was Long Day Week B.
+- Outdoor cardio (run_hilly_z2, weekend_cardio_or_rest, long_day Week A) is **not** blocked — running in rain is fine. Surface a one-line weather note in the brief instead.
+- Indoor sessions (strength_a, strength_b, mobility_or_rest): ignore weather.
+
+If `state.weather.outdoor_climbing_blocked` is true, the brief MUST propose the substitute and capture the block reason. Don't silently send Erik out in the rain.
+
 ## What I won't do
 
 - Add marathon-specific work (track intervals, 18+ mi long runs) — conflicts with the climbing-first priority
 - Silently drop a PT staple
 - Stack a max-effort climbing day on top of a quarry day
+- Send Erik to outdoor climbing on wet or recently-wet rock
 - Override your "hold the plan" call
 - Overcorrect — small tweaks first; big reshuffles only on real signal (multi-week drift, repeated red, RHR canary, etc.)
 

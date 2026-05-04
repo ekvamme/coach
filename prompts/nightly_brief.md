@@ -7,6 +7,7 @@ Steps:
 2. Determine today's date in local time. Run: date +%Y-%m-%d
 3. From workouts.json.weekly_template (or state.current_week_overrides if present), identify today's planned session.
 4. Review state.garmin and the last 5-7 log entries. Note anything salient per policies.md (ACWR shifts, RHR drift, sleep debt, shoulder color drift, unexpected/spontaneous activity, training load spikes).
+4a. Consult state.weather. If today's session is outdoor climbing (climb_quarry, or long_day Week B = outdoor tension board) AND state.weather.outdoor_climbing_blocked is true, the brief MUST propose hangboard_indoor as the substitute and capture the weather reason in the modification field. For outdoor cardio sessions (run_hilly_z2, weekend_cardio_or_rest, long_day Week A), surface a one-line weather note (temps + precip forecast) but do not block — running in rain is fine. For indoor sessions (strength_a, strength_b, mobility_or_rest), ignore weather.
 5. Update state.daily_briefs[<today>] with this exact schema:
    {
      "why_today": "1-2 sentences: why this session lands on this day in the week structure",

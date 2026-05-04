@@ -86,7 +86,8 @@
         "10 min easy traversing / mobile-shoulder warm-up at the wall",
         "Moderate intensity. Avoid max-effort cranking on left arm in compromised positions (deep underclings, gastons, full lock-offs)",
         "Stop while you still have one good lap left — leaving reps on the table is the point right now",
-        "Cool-down bike ride; band ER + t-spine extension at home"
+        "Cool-down bike ride; band ER + t-spine extension at home",
+        "Weather-blocked if any precip in past 24h OR forecast in next 24h (granite stays slick after rain). Fallback: hangboard_indoor."
       ],
       "warmup": [],
       "exercises": [],
@@ -172,13 +173,35 @@
       "duration": "90 min – 4 hr",
       "notes": [
         "Week A: Long hilly hike or 8–10 mi run, 2–4 hr conversational. Light pack → progress to weighted (5/15/25 lb).",
-        "Week B: Home tension board 30–45 min, vertical to slight overhang ONLY (not 30°). Followed by 60–90 min easy bike or run.",
+        "Week B: Outdoor tension board 30–45 min, vertical to slight overhang ONLY (not 30°). Followed by 60–90 min easy bike or run.",
         "Alternate weekly until 4 weeks symptom-free at this volume — then make Week B the default and the schedule becomes 2× climbing/wk.",
-        "Buffered by Wed Run z2 the day before (light aerobic; legs come in fresh) and Strength B the day after (legs-on-legs — silent downscale Strength B loads if Long Day went hard)."
+        "Buffered by Wed Run z2 the day before (light aerobic; legs come in fresh) and Strength B the day after (legs-on-legs — silent downscale Strength B loads if Long Day went hard).",
+        "Week B is weather-blocked (tension board is outside). If blocked, fall back to hangboard_indoor + an easy run/bike."
       ],
       "warmup": [],
       "exercises": [],
       "cooldown_ref": "post_run_mobility"
+    },
+
+    "hangboard_indoor": {
+      "title": "Hangboard (indoor — rainy-day climb substitute)",
+      "duration": "30–45 min",
+      "notes": [
+        "Used when the quarry / outdoor tension board is weather-blocked.",
+        "Phase 1 prescription is TBD — Erik to dial in shoulder-appropriate hangboard protocol when first triggered.",
+        "Until then: short open-hand repeaters at sub-maximal intensity, no half-crimp, no max hangs. Stop at any shoulder symptom.",
+        "Pair with band ER + foam roller t-spine cool-down (same as climb_quarry)."
+      ],
+      "warmup": [
+        { "name": "Foam roller t-spine", "prescription": "2 min" },
+        { "name": "Band external rotation", "prescription": "2×15 / side" },
+        { "name": "Scap push-ups", "prescription": "2×8" }
+      ],
+      "exercises": [],
+      "cooldown": [
+        { "name": "Band external rotation", "prescription": "3×15 / side" },
+        { "name": "Foam roller t-spine", "prescription": "1–2 min" }
+      ]
     },
 
     "weekend_cardio_or_rest": {
