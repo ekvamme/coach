@@ -187,17 +187,21 @@
       "title": "Hangboard (indoor — rainy-day climb substitute)",
       "duration": "30–45 min",
       "notes": [
-        "Used when the quarry / outdoor tension board is weather-blocked.",
-        "Phase 1 prescription is TBD — Erik to dial in shoulder-appropriate hangboard protocol when first triggered.",
-        "Until then: short open-hand repeaters at sub-maximal intensity, no half-crimp, no max hangs. Stop at any shoulder symptom.",
-        "Pair with band ER + foam roller t-spine cool-down (same as climb_quarry)."
+        "Used when the quarry / outdoor tension board is weather-blocked. 1×/week max, never as an addition to a normal climb week.",
+        "Protocol: Density Hangs adapted for rotator cuff rehab (Tyler Nelson Density Hangs + Hooper's Beta active-scap rule + the program's 'no symptoms' gate).",
+        "Edge: 20 mm or larger. Half-crimp or open hand. NO full crimp.",
+        "Position: two-arm only, bar at standing reach (don't jump to a higher bar that pushes shoulders past 90° overhead). Active scap throughout — shoulders pulled down/back, lats engaged, chest open. NO passive dead-hangs; drop off and reset between every hang.",
+        "Bodyweight only in Phase 1 — no added weight.",
+        "Hard stop at any shoulder symptom. Pain-monitoring model applies."
       ],
       "warmup": [
         { "name": "Foam roller t-spine", "prescription": "2 min" },
         { "name": "Band external rotation", "prescription": "2×15 / side" },
         { "name": "Scap push-ups", "prescription": "2×8" }
       ],
-      "exercises": [],
+      "exercises": [
+        { "name": "Density Hang (20 mm+ edge, half-crimp or open hand, active scap)", "prescription": "Wk 1: 20s hang × 4 reps × 2 sets. Progress reps toward 6/set then duration toward 30s. Cap 30s × 6 × 3 sets.", "load": "bodyweight, 15s rest between hangs, 3–5 min rest between sets" }
+      ],
       "cooldown": [
         { "name": "Band external rotation", "prescription": "3×15 / side" },
         { "name": "Foam roller t-spine", "prescription": "1–2 min" }
