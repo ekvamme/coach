@@ -888,10 +888,11 @@ const html = `<!doctype html>
   .ex-list { list-style: none; padding: 0; margin: 0; }
   .ex { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .ex:last-child { border-bottom: 0; }
-  .ex-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .ex-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; min-width: 0; }
+  .ex-name { min-width: 0; word-wrap: break-word; }
   .ex-name a { color: var(--accent); text-decoration: none; }
   .ex-name a:active { opacity: 0.6; }
-  .ex-pres { color: var(--dim); font-size: 13px; white-space: nowrap; }
+  .ex-pres { color: var(--dim); font-size: 13px; text-align: right; flex-shrink: 0; max-width: 60%; word-wrap: break-word; }
   .ex-load { font-size: 13px; color: var(--dim); margin-top: 2px; }
   .note { font-size: 12px; color: var(--dim); margin-top: 4px; font-style: italic; }
   .tag { font-size: 10px; padding: 1px 5px; border-radius: 4px; vertical-align: middle; }

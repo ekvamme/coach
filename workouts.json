@@ -201,9 +201,10 @@
       ],
       "exercises": [
         {
-          "name": "Density Hang (20 mm+ edge, half-crimp or open hand, active scap)",
-          "prescription": "Wk 1: 20s hang × 4 reps × 2 sets. Progress reps toward 6/set then duration toward 30s. Cap 30s × 6 × 3 sets.",
-          "load": "bodyweight, 15s rest between hangs, 3–5 min rest between sets",
+          "name": "Density Hang",
+          "prescription": "20s × 4 × 2",
+          "load": "bodyweight",
+          "note": "20 mm+ edge · half-crimp or open hand · two-arm at standing reach · active scap throughout (no passive dead-hangs) · stop at any shoulder symptom · Wk 1 dose; progress toward 30s × 6 × 3 over weeks.",
           "timer_program": {
             "name": "Hangboard — Wk 1",
             "sets": 2,
